@@ -7,7 +7,6 @@ import {
     MdSkipNext,
     MdPlayArrow,
     MdPause,
-    MdVolumeUp
 } from 'react-icons/md'
 import NowPlaying from './NowPlaying'
 

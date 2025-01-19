@@ -12,7 +12,7 @@ export default function Navbar({ activePanel, setActivePanel }) {
             {/* Logo */}
             <div className="bg-purple-700 w-12 h-12 flex items-center justify-center rounded-full">
                 <span className="text-xl font-bold">
-                    <img  className="rounded-full h-12" src={logo}/>
+                    <img  className="rounded-full h-12" src={logo} alt="Navbar Logo"/>
                 </span>
             </div>
 
