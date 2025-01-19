@@ -1,4 +1,4 @@
-// App.jsx
+// src/App.jsx
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import {
@@ -7,6 +7,8 @@ import {
     signOutUser,
     saveLikedSongs,
     fetchLikedSongs,
+    fetchRecentlyPlayed,
+    saveRecentlyPlayed,
 } from "./firebase"; // Firebase integration
 import AnimatedBackground from "./components/AnimatedBackground";
 import Visualizer from "./components/Visualizer";
@@ -36,29 +38,37 @@ export default function App() {
             setUser(currentUser);
             if (currentUser) {
                 try {
-                    const fetchedSongs = await fetchLikedSongs(currentUser.uid);
-                    setLikedSongs(fetchedSongs);
+                    const fetchedLikedSongs = await fetchLikedSongs(currentUser.uid);
+                    setLikedSongs(fetchedLikedSongs);
                     console.log("Liked songs fetched on sign-in or app load.");
+
+                    const fetchedRecentlyPlayed = await fetchRecentlyPlayed(currentUser.uid);
+                    setRecentlyPlayed(fetchedRecentlyPlayed);
+                    console.log("Recently played songs fetched on sign-in or app load.");
                 } catch (error) {
-                    console.error("Error fetching liked songs:", error);
-                    toast.error("Failed to fetch liked songs.", { position: "top-right" });
+                    console.error("Error fetching songs:", error);
+                    toast.error("Failed to fetch songs.", {
+                        position: "top-right",
+                    });
                 }
             } else {
                 setLikedSongs([]);
+                setRecentlyPlayed([]);
             }
         });
         return () => unsubscribe();
     }, []);
 
     useEffect(() => {
-        // Save liked songs when the user closes the browser or refreshes
+        // Save liked and recently played songs when the user closes the browser or refreshes
         const saveSongsOnUnload = async () => {
             if (user) {
                 try {
                     await saveLikedSongs(user.uid, likedSongs);
-                    console.log("Liked songs saved successfully on browser close.");
+                    await saveRecentlyPlayed(user.uid, recentlyPlayed);
+                    console.log("Songs saved successfully on browser close.");
                 } catch (error) {
-                    console.error("Error saving liked songs on browser close:", error);
+                    console.error("Error saving songs on browser close:", error);
                 }
             }
         };
@@ -68,7 +78,7 @@ export default function App() {
         return () => {
             window.removeEventListener("beforeunload", saveSongsOnUnload);
         };
-    }, [user, likedSongs]);
+    }, [user, likedSongs, recentlyPlayed]);
 
     /**
      * Handle user sign-in with Google
@@ -95,12 +105,14 @@ export default function App() {
         try {
             if (user) {
                 await saveLikedSongs(user.uid, likedSongs);
-                console.log("Liked songs saved successfully before sign-out.");
+                await saveRecentlyPlayed(user.uid, recentlyPlayed);
+                console.log("Songs saved successfully before sign-out.");
             }
 
             await signOutUser();
             setUser(null);
             setLikedSongs([]);
+            setRecentlyPlayed([]);
             toast.success("You have been signed out.", {
                 position: "top-right",
             });
@@ -129,7 +141,7 @@ export default function App() {
         setCurrentSong(song);
         setRecentlyPlayed((prev) => {
             const filtered = prev.filter((item) => item.videoId !== song.videoId);
-            return [song, ...filtered].slice(0, 10);
+            return [song, ...filtered].slice(0, 10); // Keep only the latest 10
         });
     };
 
@@ -204,6 +216,8 @@ export default function App() {
                     user={user}
                     onSignIn={handleSignIn}
                     onSignOut={handleSignOut}
+                    likedSongs={likedSongs}
+                    setLikedSongs={setLikedSongs}
                 />
             </div>
 
@@ -282,4 +296,3 @@ export default function App() {
         </div>
     );
 }
-

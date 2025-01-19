@@ -1,8 +1,10 @@
-import React from 'react'
+// src/components/RecentlyPlayed.jsx
+import React from 'react';
+import PropTypes from 'prop-types';
 
 export default function RecentlyPlayed({ songs, onSelectSong }) {
     if (!songs.length) {
-        return null // Hide section if no songs have been played
+        return null; // Hide section if no songs have been played
     }
 
     return (
@@ -12,7 +14,7 @@ export default function RecentlyPlayed({ songs, onSelectSong }) {
                 {songs.map((song) => (
                     <div
                         key={song.videoId}
-                        className="relative bg-gradient-to-b from-gray-800 to-black rounded-lg overflow-hidden cursor-pointer hover:scale-105 transform transition-transform duration-300"
+                        className="relative bg-gradient-to-b md:h-48 from-gray-800 to-black rounded-lg overflow-hidden cursor-pointer hover:scale-105 transform transition-transform duration-300"
                         onClick={() => onSelectSong(song)} // Set as current song
                     >
                         <img
@@ -28,5 +30,17 @@ export default function RecentlyPlayed({ songs, onSelectSong }) {
                 ))}
             </div>
         </div>
-    )
+    );
 }
+
+RecentlyPlayed.propTypes = {
+    songs: PropTypes.arrayOf(
+        PropTypes.shape({
+            videoId: PropTypes.string.isRequired,
+            title: PropTypes.string.isRequired,
+            artist: PropTypes.string.isRequired,
+            imageUrl: PropTypes.string,
+        })
+    ).isRequired,
+    onSelectSong: PropTypes.func.isRequired,
+};

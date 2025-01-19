@@ -132,7 +132,7 @@ export default function MusicPlayer({
                     {/* Prev/Next only if Liked panel is active */}
                     {isLikedPanelActive && (
                         <button
-                            className="hover:text-pink-400 transition-colors md:static absolute top-[35rem] right-[23rem]"
+                            className="hover:text-pink-400 transition-colors md:static absolute top-[33rem] right-[23rem]"
                             onClick={onPrevLikedSong}
                             disabled={!hasSong}
                         >
@@ -142,7 +142,7 @@ export default function MusicPlayer({
 
                     {/* Play/Pause */}
                     <button
-                        className={`bg-purple-600 hover:bg-purple-500 transition-colors rounded-full p-2 ${
+                        className={`bg-purple-600 hover:bg-purple-500 transition-colors rounded-full p-2 md:static absolute top-[32rem] right-[12rem] ${
                             !hasSong ? 'opacity-50 cursor-not-allowed' : ''
                         }`}
                         onClick={handlePlayPause}
@@ -153,7 +153,7 @@ export default function MusicPlayer({
 
                     {isLikedPanelActive && (
                         <button
-                            className="hover:text-pink-400 transition-colors md:static absolute top-[35rem] right-[2rem]  "
+                            className="hover:text-pink-400 transition-colors md:static absolute top-[33rem] right-[2rem]  "
                             onClick={onNextLikedSong}
                             disabled={!hasSong}
                         >
@@ -165,7 +165,7 @@ export default function MusicPlayer({
                 {/* Seek bar (Desktop only) */}
 
             </div>
-            <div className="hidden md:flex items-center space-x-4 mt-2 w-[33%]">
+            <div className="hidden md:flex items-center space-x-4 mt-2 w-[33%] ">
                 <span className="text-sm">{formatTime(playedSeconds)}</span>
                 <input
                     type="range"
