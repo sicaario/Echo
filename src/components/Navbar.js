@@ -1,5 +1,6 @@
 import React from 'react'
 import { MdHome, MdSearch, MdPerson, MdSettings, MdFavorite } from 'react-icons/md'
+import logo from './logo.png'
 
 export default function Navbar({ activePanel, setActivePanel }) {
     // Helper to toggle a panel: if it's already open, close it; otherwise open
@@ -10,7 +11,9 @@ export default function Navbar({ activePanel, setActivePanel }) {
         <nav className="fixed top-0 left-0 h-full w-16 bg-black bg-opacity-40 backdrop-blur-sm text-white flex flex-col items-center py-6 space-y-12">
             {/* Logo */}
             <div className="bg-purple-700 w-12 h-12 flex items-center justify-center rounded-full">
-                <span className="text-xl font-bold">E</span>
+                <span className="text-xl font-bold">
+                    <img  className="rounded-full h-12" src={logo}/>
+                </span>
             </div>
 
             {/* Icons */}

@@ -19,7 +19,7 @@ Echo is a modern web application that allows users to search for songs, like the
 - 
 ## Live Demo
 
-Check out the live application here: [Echo Web App](https://your-live-link-here.com)
+Check out the live application here: [Echo Web App](https://echo25.netlify.app/)
 
 ## Setup Instructions
 
@@ -29,7 +29,7 @@ Follow these steps to set up and run the Echo web application on your local mach
 1. Fork this repository to your GitHub account.
 2. Clone the forked repository:
    ```bash
-   git clone https://github.com/Harman-DevCloud/echo.git
+   git clone https://github.com/Harman-DevCloud/Echo.git
    cd echo
    ```
 
