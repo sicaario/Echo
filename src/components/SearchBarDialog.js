@@ -19,7 +19,7 @@ export default function SearchBarDialog({ onClose, setSong }) {
         }
 
         const fetchSuggestions = async () => {
-            const API_KEY = 'AIzaSyAVHAMAWUR9TbTwEwPTJeEzhybA5IFEU8k'
+            const API_KEY = 'AIzaSyA4lsJF_3LIV-8UJGqfnTe7QhOYblYZxho'
             const API_URL = `https://www.googleapis.com/youtube/v3/search`
 
             try {
