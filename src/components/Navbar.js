@@ -50,66 +50,66 @@ export default function Navbar({
                         onClick={() => togglePanel("home")}
                         aria-label="Home"
                     >
-                        <MdHome size={24} />
+                        <MdHome size={26} />
                     </button>
 
                     <button
-                        className={`hover:text-pink-500 pt-4 ${
+                        className={`hover:text-pink-500 pt-6 ${
                             activePanel === "search" ? "text-pink-400" : ""
                         }`}
                         onClick={() => togglePanel("search")}
                         aria-label="Search"
                     >
-                        <MdSearch size={24} />
+                        <MdSearch size={26} />
                     </button>
 
                     <button
-                        className={`hover:text-pink-500 pt-4 ${
+                        className={`hover:text-pink-500 pt-6 ${
                             activePanel === "liked" ? "text-pink-400" : ""
                         }`}
                         onClick={() => togglePanel("liked")}
                         aria-label="Liked Songs"
                     >
-                        <MdFavorite size={24} />
+                        <MdFavorite size={26} />
                     </button>
 
                     <button
-                        className={`hover:text-pink-500 pt-4 ${
+                        className={`hover:text-pink-500 pt-6 ${
                             activePanel === "share" ? "text-pink-400" : ""
                         }`}
                         onClick={() => setIsShareOpen(true)}
                         aria-label="Share Liked Songs"
                     >
-                        <MdShare size={24} />
+                        <MdShare size={26} />
                     </button>
 
                     <button
-                        className={`hover:text-pink-500 pt-4 ${
+                        className={`hover:text-pink-500 pt-6 ${
                             activePanel === "receive" ? "text-pink-400" : ""
                         }`}
                         onClick={() => setIsReceiveOpen(true)}
                         aria-label="Receive Shared Songs"
                     >
-                        <MdDownload size={24} />
+                        <MdDownload size={26} />
                     </button>
 
                     <button
-                        className={`hover:text-pink-500 pt-4 ${
+                        className={`hover:text-pink-500 pt-6 ${
                             activePanel === "profile" ? "text-pink-400" : ""
                         }`}
                         onClick={() => togglePanel("profile")}
                         aria-label="Profile"
                     >
-                        <MdPerson size={24} />
+                        <MdPerson size={26} />
                     </button>
 
                     {/* Sign-In / Sign-Out */}
                     <button
-                        className="hover:text-pink-500 pt-4"
+                        className="hover:text-pink-500 pt-6"
                         onClick={user ? onSignOut : onSignIn}
                         aria-label={user ? "Sign Out" : "Sign In"}
                     >
-                        {user ? <CiLogout size={24} /> : <MdLogin size={24} />}
+                        {user ? <CiLogout size={26} /> : <MdLogin size={24} />}
                     </button>
                 </div>
             </nav>
