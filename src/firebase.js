@@ -11,9 +11,7 @@ import {
     doc,
     setDoc,
     getDoc,
-    updateDoc,
-    arrayUnion,
-    arrayRemove,
+
 } from "firebase/firestore";
 import { nanoid } from "nanoid";
 
