@@ -9,11 +9,12 @@ import {
     fetchLikedSongs,
     fetchRecentlyPlayed,
     saveRecentlyPlayed,
+    removeRecentlyPlayedSong,
 } from "./firebase"; // Firebase integration
 import AnimatedBackground from "./components/AnimatedBackground";
 import Visualizer from "./components/Visualizer";
 import Navbar from "./components/Navbar";
-import MobileNavbar from "./components/MobileNavbar";
+import MobileNavbar from "./components/MobileNavbar"; // Import MobileNavbar
 import SearchBarDialog from "./components/SearchBarDialog";
 import ProfileDialog from "./components/ProfileDialog";
 import MusicPlayer from "./components/MusicPlayer";
@@ -197,6 +198,40 @@ export default function App() {
         }
     };
 
+    /**
+     * Handle deletion of a song from Recently Played
+     * @param {string} videoId - The unique video ID of the song to delete
+     */
+    const handleDeleteSong = async (videoId) => {
+        if (!user) {
+            toast.error("You must be signed in to delete songs.", {
+                position: "top-right",
+            });
+            return;
+        }
+
+        try {
+            console.log(`Deleting song with videoId: ${videoId}`);
+            // Remove the song from Firestore
+            await removeRecentlyPlayedSong(user.uid, videoId);
+
+            // Update local state
+            setRecentlyPlayed((prevSongs) =>
+                prevSongs.filter((song) => song.videoId !== videoId)
+            );
+
+            toast.success("Song removed from Recently Played.", {
+                position: "top-right",
+            });
+            console.log(`Song with videoId ${videoId} deleted successfully.`);
+        } catch (error) {
+            console.error("Failed to delete song:", error);
+            toast.error("Failed to delete the song. Please try again.", {
+                position: "top-right",
+            });
+        }
+    };
+
     const isLikedPanelActive = activePanel === "liked";
 
     return (
@@ -218,6 +253,17 @@ export default function App() {
                     onSignOut={handleSignOut}
                     likedSongs={likedSongs}
                     setLikedSongs={setLikedSongs}
+                />
+            </div>
+
+            {/* Mobile Navbar */}
+            <div className="fixed bottom-0 left-0 right-0 z-50">
+                <MobileNavbar
+                    activePanel={activePanel}
+                    setActivePanel={setActivePanel}
+                    user={user}          // Pass user prop
+                    onSignIn={handleSignIn}    // Pass onSignIn prop
+                    onSignOut={handleSignOut}  // Pass onSignOut prop
                 />
             </div>
 
@@ -243,6 +289,7 @@ export default function App() {
                         <RecentlyPlayed
                             songs={recentlyPlayed}
                             onSelectSong={handleSetCurrentSong}
+                            onDeleteSong={handleDeleteSong} // Pass the delete handler
                         />
                     )}
                 </div>
@@ -274,8 +321,8 @@ export default function App() {
                 />
             </div>
 
-            {/* Mobile Layout */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex flex-col">
+            {/* Mobile Music Player */}
+            <div className="md:hidden fixed bottom-16 left-0 right-0 z-50 flex flex-col">
                 <div className="h-20">
                     <MusicPlayer
                         song={currentSong}
@@ -284,12 +331,6 @@ export default function App() {
                         onLikeToggle={handleLikeToggle}
                         onPrevLikedSong={handlePrevLikedSong}
                         onNextLikedSong={handleNextLikedSong}
-                    />
-                </div>
-                <div className="h-16">
-                    <MobileNavbar
-                        activePanel={activePanel}
-                        setActivePanel={setActivePanel}
                     />
                 </div>
             </div>

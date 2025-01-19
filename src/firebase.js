@@ -11,7 +11,7 @@ import {
     doc,
     setDoc,
     getDoc,
-
+    updateDoc,
 } from "firebase/firestore";
 import { nanoid } from "nanoid";
 
@@ -144,6 +144,32 @@ const fetchRecentlyPlayed = async (userId) => {
 };
 
 /**
+ * Remove a song from the recently played list for a given user.
+ * @param {string} userId - The user's unique ID.
+ * @param {string} videoId - The unique video ID of the song to remove.
+ * @returns {Promise<void>}
+ * @throws {Error} - If removal fails.
+ */
+const removeRecentlyPlayedSong = async (userId, videoId) => {
+    try {
+        // Fetch the current recently played songs
+        const songs = await fetchRecentlyPlayed(userId);
+
+        // Filter out the song to remove based on videoId
+        const updatedSongs = songs.filter(song => song.videoId !== videoId);
+
+        // Update Firestore with the updated array
+        const docRef = doc(db, "users", userId);
+        await setDoc(docRef, { recentlyPlayed: updatedSongs }, { merge: true });
+
+        console.log(`Song with videoId ${videoId} removed from recently played.`);
+    } catch (error) {
+        console.error("Error removing song from recently played:", error);
+        throw error;
+    }
+};
+
+/**
  * Create a share ID and store the shared songs.
  * @param {string} userId - The user's unique ID.
  * @param {Array} likedSongs - An array of liked songs to share.
@@ -200,6 +226,7 @@ export {
     saveLikedSongs,
     fetchRecentlyPlayed,
     saveRecentlyPlayed,
+    removeRecentlyPlayedSong, // Export the new function
     createShare,
     getShare,
 };
