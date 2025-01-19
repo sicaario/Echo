@@ -1,5 +1,5 @@
 import React from 'react';
-import { MdHome, MdSearch, MdPerson, MdSettings, MdFavorite } from 'react-icons/md';
+import { MdHome, MdSearch, MdPerson, MdFavorite } from 'react-icons/md';
 
 export default function MobileNavbar({ activePanel, setActivePanel }) {
     // Helper function to toggle the panel
