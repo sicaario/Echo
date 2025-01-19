@@ -47,16 +47,6 @@ export default function MobileNavbar({ activePanel, setActivePanel }) {
             >
                 <MdPerson size={24} />
             </button>
-
-            {/* Settings Button */}
-            <button
-                className={`hover:text-pink-500 ${
-                    activePanel === 'settings' ? 'text-pink-400' : ''
-                }`}
-                onClick={() => togglePanel('settings')}
-            >
-                <MdSettings size={24} />
-            </button>
         </nav>
     );
 }
