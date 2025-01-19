@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { MdClose, MdContentCopy } from "react-icons/md";
+import { FaSpinner } from "react-icons/fa"; // Import spinner icon
 import { createShare, auth } from "../firebase";
 import { toast } from "react-hot-toast";
 
@@ -44,13 +45,21 @@ export default function ShareDialog({ onClose, likedSongs }) {
 
     const handleCopy = () => {
         if (shareId) {
-            navigator.clipboard.writeText(shareId).then(() => {
-                setIsCopying(true);
-                toast.success("Share ID copied to clipboard!", {
-                    position: "top-right",
+            setIsCopying(true); // Set copying state to true
+            navigator.clipboard.writeText(shareId)
+                .then(() => {
+                    toast.success("Share ID copied to clipboard!", {
+                        position: "top-right",
+                    });
+                    setTimeout(() => setIsCopying(false), 2000);
+                })
+                .catch((err) => {
+                    console.error("Failed to copy:", err);
+                    toast.error("Failed to copy Share ID.", {
+                        position: "top-right",
+                    });
+                    setIsCopying(false);
                 });
-                setTimeout(() => setIsCopying(false), 2000);
-            });
         }
     };
 
@@ -106,10 +115,17 @@ export default function ShareDialog({ onClose, likedSongs }) {
                             <span className="flex-1 break-all">{shareId}</span>
                             <button
                                 onClick={handleCopy}
-                                className="ml-2 text-gray-300 hover:text-gray-100"
+                                className={`ml-2 text-gray-300 hover:text-gray-100 flex items-center ${
+                                    isCopying ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
                                 aria-label="Copy Share ID"
+                                disabled={isCopying}
                             >
-                                <MdContentCopy size={20} />
+                                {isCopying ? (
+                                    <FaSpinner size={20} className="animate-spin" />
+                                ) : (
+                                    <MdContentCopy size={20} />
+                                )}
                             </button>
                         </div>
 
