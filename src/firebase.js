@@ -1,8 +1,20 @@
 // firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+} from "firebase/auth";
+import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc,
+} from "firebase/firestore";
 
+// TODO: Replace the following with your app's Firebase project configuration.
+// You can find these details in your Firebase project settings.
 const firebaseConfig = {
     apiKey: "AIzaSyDZV7V_nk4NpMNko5ud0W-FnYMURsituh8",
     authDomain: "echo2025-8c347.firebaseapp.com",
@@ -19,49 +31,82 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const db = getFirestore(app);
 
+/**
+ * Sign in with Google using a popup.
+ * @returns {Promise<Object>} - The authenticated user object.
+ * @throws {Error} - If sign-in fails.
+ */
 const signInWithGoogle = async () => {
     try {
         const result = await signInWithPopup(auth, provider);
-        console.log("User signed in:", result.user);
+        return result.user;
     } catch (error) {
-        console.error("Error during sign in:", error.message);
+        console.error("Error during sign-in:", error);
+        throw error;
     }
 };
 
+/**
+ * Sign out the current user.
+ * @returns {Promise<void>}
+ * @throws {Error} - If sign-out fails.
+ */
 const signOutUser = async () => {
     try {
         await signOut(auth);
-        console.log("User signed out");
     } catch (error) {
-        console.error("Error during sign out:", error.message);
+        console.error("Error during sign-out:", error);
+        throw error;
     }
 };
 
-// Save liked songs to Firestore
+/**
+ * Save liked songs to Firestore for a given user.
+ * @param {string} userId - The user's unique ID.
+ * @param {Array} likedSongs - An array of liked songs.
+ * @returns {Promise<void>}
+ * @throws {Error} - If saving fails.
+ */
 const saveLikedSongs = async (userId, likedSongs) => {
     try {
         const docRef = doc(db, "users", userId);
         await setDoc(docRef, { likedSongs }, { merge: true });
         console.log("Liked songs saved successfully.");
     } catch (error) {
-        console.error("Error saving liked songs:", error.message);
+        console.error("Error saving liked songs:", error);
+        throw error;
     }
 };
 
+/**
+ * Fetch liked songs from Firestore for a given user.
+ * @param {string} userId - The user's unique ID.
+ * @returns {Promise<Array>} - An array of liked songs.
+ * @throws {Error} - If fetching fails.
+ */
 const fetchLikedSongs = async (userId) => {
     try {
-        const docRef = doc(db, "users", userId); // Reference to the user's document
+        const docRef = doc(db, "users", userId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-            console.log("Liked songs fetched:", docSnap.data().likedSongs);
+            console.log("Liked songs fetched successfully.");
             return docSnap.data().likedSongs || [];
         } else {
-            console.log("No liked songs found.");
+            console.log("No liked songs found for this user.");
             return [];
         }
     } catch (error) {
-        console.error("Error fetching liked songs:", error.message);
-        return [];
+        console.error("Error fetching liked songs:", error);
+        throw error;
     }
 };
-export { db, auth, provider, signInWithGoogle, signOutUser, fetchLikedSongs, saveLikedSongs };
+
+export {
+    db,
+    auth,
+    provider,
+    signInWithGoogle,
+    signOutUser,
+    fetchLikedSongs,
+    saveLikedSongs,
+};

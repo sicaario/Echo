@@ -73,7 +73,7 @@ export default function SearchBarDialog({ onClose, setSong }) {
             </div>
 
             {suggestions.length > 0 && (
-                <div className="bg-gradient-to-b from-gray-900 via-black to-gray-800 max-h-60 overflow-y-auto mt-2 md:mr-20 md:ml-20 overflow-x-hidden rounded-lg shadow-md">
+                <div className="bg-gradient-to-b from-gray-900 via-black to-gray-800 max-h-60 overflow-y-auto scrollbar-hidden mt-2 md:mr-20 md:ml-20 overflow-x-hidden rounded-lg shadow-md">
                     {suggestions.map((suggestion) => (
                         <div
                             key={suggestion.videoId}

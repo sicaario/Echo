@@ -126,13 +126,13 @@ export default function MusicPlayer({
             </div>
 
             {/* Middle Section: Controls + Seekbar */}
-            <div className="w-1/3 flex flex-col items-center justify-center">
-                <div className="flex items-center space-x-6">
+            <div className="w-1/3 md:static absolute bottom-[40rem] -right-4 flex flex-col items-center justify-center">
+                <div className=" justify-center items-center space-x-6">
 
                     {/* Prev/Next only if Liked panel is active */}
                     {isLikedPanelActive && (
                         <button
-                            className="hover:text-pink-400 transition-colors"
+                            className="hover:text-pink-400 transition-colors md:static absolute top-[35rem] right-[23rem]"
                             onClick={onPrevLikedSong}
                             disabled={!hasSong}
                         >
@@ -153,7 +153,7 @@ export default function MusicPlayer({
 
                     {isLikedPanelActive && (
                         <button
-                            className="hover:text-pink-400 transition-colors"
+                            className="hover:text-pink-400 transition-colors md:static absolute top-[35rem] right-[2rem]  "
                             onClick={onNextLikedSong}
                             disabled={!hasSong}
                         >

@@ -58,7 +58,7 @@ export default function NowPlaying({
     }, []);
 
     return (
-        <div className=" text-white rounded-lg shadow-lg p-2 w-11 md:w-60">
+        <div className=" text-white rounded-lg shadow-lg p-2 w-56 md:w-60">
             <canvas ref={canvasRef} width={200} height={80} className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none" />
             <div className="relative flex items-center gap-4">
                 {/* Waveform animation */}

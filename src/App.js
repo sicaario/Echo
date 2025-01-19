@@ -1,5 +1,6 @@
+// App.jsx
 import React, { useState, useEffect } from "react";
-import './App.css';
+import "./App.css";
 import {
     auth,
     signInWithGoogle,
@@ -13,11 +14,11 @@ import Navbar from "./components/Navbar";
 import MobileNavbar from "./components/MobileNavbar";
 import SearchBarDialog from "./components/SearchBarDialog";
 import ProfileDialog from "./components/ProfileDialog";
-import SettingsDialog from "./components/SettingsDialog";
 import MusicPlayer from "./components/MusicPlayer";
 import RecentlyPlayed from "./components/RecentlyPlayed";
 import LikedSongs from "./components/LikedSongs";
 import { AnimatePresence } from "framer-motion";
+import { Toaster, toast } from "react-hot-toast";
 
 export default function App() {
     const [activePanel, setActivePanel] = useState(null);
@@ -26,15 +27,22 @@ export default function App() {
     const [likedSongs, setLikedSongs] = useState([]);
     const [user, setUser] = useState(null); // Manage user authentication state
 
+    // Determine if the main content should be blurred based on active panels
     const shouldBlur = ["search", "profile", "settings"].includes(activePanel);
 
     useEffect(() => {
         // Listen for Firebase Auth State changes
-        const unsubscribe = auth.onAuthStateChanged(async (user) => {
-            setUser(user);
-            if (user) {
-                const fetchedSongs = await fetchLikedSongs(user.uid);
-                setLikedSongs(fetchedSongs);
+        const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                try {
+                    const fetchedSongs = await fetchLikedSongs(currentUser.uid);
+                    setLikedSongs(fetchedSongs);
+                    console.log("Liked songs fetched on sign-in or app load.");
+                } catch (error) {
+                    console.error("Error fetching liked songs:", error);
+                    toast.error("Failed to fetch liked songs.", { position: "top-right" });
+                }
             } else {
                 setLikedSongs([]);
             }
@@ -62,24 +70,57 @@ export default function App() {
         };
     }, [user, likedSongs]);
 
+    /**
+     * Handle user sign-in with Google
+     */
+    const handleSignIn = async () => {
+        try {
+            const signedInUser = await signInWithGoogle();
+            setUser(signedInUser);
+            toast.success(`Welcome, ${signedInUser.displayName}!`, {
+                position: "top-right",
+            });
+        } catch (error) {
+            console.error("Error during sign-in:", error.message);
+            toast.error(`Sign in failed: ${error.message}`, {
+                position: "top-right",
+            });
+        }
+    };
+
+    /**
+     * Handle user sign-out
+     */
     const handleSignOut = async () => {
         try {
             if (user) {
                 await saveLikedSongs(user.uid, likedSongs);
-                console.log("Liked songs saved successfully.");
+                console.log("Liked songs saved successfully before sign-out.");
             }
 
             await signOutUser();
             setUser(null);
             setLikedSongs([]);
-            console.log("User signed out successfully.");
+            toast.success("You have been signed out.", {
+                position: "top-right",
+            });
         } catch (error) {
             console.error("Error during sign-out:", error.message);
+            toast.error(`Sign out failed: ${error.message}`, {
+                position: "top-right",
+            });
         }
     };
 
+    /**
+     * Close all active panels/dialogs
+     */
     const closeAllPanels = () => setActivePanel(null);
 
+    /**
+     * Set the current song and update recently played list
+     * @param {Object} song - The selected song object
+     */
     const handleSetCurrentSong = (song) => {
         if (!song?.videoId) {
             alert("This song does not have a valid YouTube videoId.");
@@ -92,6 +133,11 @@ export default function App() {
         });
     };
 
+    /**
+     * Toggle like status of a song
+     * @param {Object} song - The song to toggle
+     * @param {boolean} isCurrentlyLiked - Whether the song is currently liked
+     */
     const handleLikeToggle = (song, isCurrentlyLiked) => {
         setLikedSongs((prev) => {
             if (isCurrentlyLiked) {
@@ -102,6 +148,11 @@ export default function App() {
         });
     };
 
+    /**
+     * Reorder liked songs in the list
+     * @param {number} fromIndex - The current index of the song
+     * @param {number} toIndex - The new index to move the song to
+     */
     const handleReorderLikedSongs = (fromIndex, toIndex) => {
         setLikedSongs((prev) => {
             if (toIndex < 0 || toIndex >= prev.length) return prev;
@@ -112,6 +163,9 @@ export default function App() {
         });
     };
 
+    /**
+     * Play the previous liked song
+     */
     const handlePrevLikedSong = () => {
         if (!currentSong) return;
         const idx = likedSongs.findIndex((s) => s.videoId === currentSong.videoId);
@@ -120,6 +174,9 @@ export default function App() {
         }
     };
 
+    /**
+     * Play the next liked song
+     */
     const handleNextLikedSong = () => {
         if (!currentSong) return;
         const idx = likedSongs.findIndex((s) => s.videoId === currentSong.videoId);
@@ -132,6 +189,10 @@ export default function App() {
 
     return (
         <div className="relative w-screen h-screen text-white overflow-hidden">
+            {/* Toast Notifications */}
+            <Toaster position="top-right" reverseOrder={false} />
+
+            {/* Background and Visualizer */}
             <AnimatedBackground />
             <Visualizer />
 
@@ -141,14 +202,14 @@ export default function App() {
                     activePanel={activePanel}
                     setActivePanel={setActivePanel}
                     user={user}
-                    onSignIn={signInWithGoogle}
+                    onSignIn={handleSignIn}
                     onSignOut={handleSignOut}
                 />
             </div>
 
             {/* Main Content */}
             <div
-                className={`relative z-10 p-6 md:ml-16 h-full flex flex-col transition-all duration-300 ${
+                className={`relative z-10 p-6 md:ml-20 h-full flex flex-col transition-all duration-300 ${
                     shouldBlur ? "blur-sm" : ""
                 }`}
             >
@@ -184,15 +245,6 @@ export default function App() {
                 )}
                 {activePanel === "profile" && user && (
                     <ProfileDialog key="profile" onClose={closeAllPanels} user={user} />
-                )}
-                {activePanel === "settings" && (
-                    <SettingsDialog
-                        key="settings"
-                        onClose={closeAllPanels}
-                        onSignIn={signInWithGoogle}
-                        onSignOut={handleSignOut}
-                        user={user}
-                    />
                 )}
             </AnimatePresence>
 
@@ -230,5 +282,4 @@ export default function App() {
         </div>
     );
 }
-
 
