@@ -21,7 +21,7 @@ export default function SearchBarDialog({ onClose, setSong }) {
             return
         }
 
-        const API_KEY = 'AIzaSyA4lsJF_3LIV-8UJGqfnTe7QhOYblYZxho' // Replace with your actual API key
+        const API_KEY = 'AIzaSyC-Pm8v6RUZa68yvF9Y30tbhAhmLuszs6Y' // Replace with your actual API key
         const API_URL = `https://www.googleapis.com/youtube/v3/search`
 
         setIsLoading(true)
