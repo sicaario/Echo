@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import {
@@ -261,9 +260,9 @@ export default function App() {
                 <MobileNavbar
                     activePanel={activePanel}
                     setActivePanel={setActivePanel}
-                    user={user}          // Pass user prop
-                    onSignIn={handleSignIn}    // Pass onSignIn prop
-                    onSignOut={handleSignOut}  // Pass onSignOut prop
+                    user={user}
+                    onSignIn={handleSignIn}
+                    onSignOut={handleSignOut}
                 />
             </div>
 
@@ -289,7 +288,7 @@ export default function App() {
                         <RecentlyPlayed
                             songs={recentlyPlayed}
                             onSelectSong={handleSetCurrentSong}
-                            onDeleteSong={handleDeleteSong} // Pass the delete handler
+                            onDeleteSong={handleDeleteSong}
                         />
                     )}
                 </div>
@@ -305,7 +304,11 @@ export default function App() {
                     />
                 )}
                 {activePanel === "profile" && user && (
-                    <ProfileDialog key="profile" onClose={closeAllPanels} user={user} />
+                    <ProfileDialog
+                        key="profile"
+                        onClose={closeAllPanels}
+                        user={user}
+                    />
                 )}
             </AnimatePresence>
 

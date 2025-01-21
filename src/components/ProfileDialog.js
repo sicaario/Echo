@@ -5,7 +5,7 @@ import { MdClose } from "react-icons/md"; // Import the close icon
 export default function ProfileDialog({ onClose, user }) {
     return (
         <motion.div
-            className="fixed top-4 right-4 w-64 z-30 bg-gradient-to-br
+            className="fixed top-0 right-4 w-64 z-30 bg-gradient-to-br
                  from-purple-800 via-black to-gray-900 rounded-lg shadow-lg p-4"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}

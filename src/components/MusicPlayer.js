@@ -7,6 +7,8 @@ import {
     MdSkipNext,
     MdPlayArrow,
     MdPause,
+    MdOpenInFull,
+    MdClose
 } from 'react-icons/md'
 import NowPlaying from './NowPlaying'
 
@@ -18,129 +20,118 @@ export default function MusicPlayer({
                                         onPrevLikedSong,
                                         onNextLikedSong
                                     }) {
-    const [playedSeconds, setPlayedSeconds] = useState(0);
-    const [duration, setDuration] = useState(0);
+    const [playedSeconds, setPlayedSeconds] = useState(0)
+    const [duration, setDuration] = useState(0)
+    const [isPlaying, setIsPlaying] = useState(false)
+    const [autoPlayNextSong, setAutoPlayNextSong] = useState(false)
 
-    // Tracks whether the player is currently playing or not
-    const [isPlaying, setIsPlaying] = useState(false);
+    // Whether the "Reels" style player is shown on the right (desktop)
+    const [showVideo, setShowVideo] = useState(false)
 
-    // Used to allow auto-playing the next song ONLY when the current one finishes
-    const [autoPlayNextSong, setAutoPlayNextSong] = useState(false);
+    const audioPlayerRef = useRef(null) // For the hidden audio player
+    const reelsPlayerRef = useRef(null) // For the reels player
+    const hasSong = Boolean(song?.videoId)
 
-    const playerRef = useRef(null);
-
-    // Has valid YouTube videoId?
-    const hasSong = Boolean(song && song.videoId);
-
-    // Check if current song is in likedSongs
+    // Is current track in liked songs?
     const isCurrentTrackLiked = likedSongs.some(
         (item) => item.videoId === song?.videoId
-    );
+    )
 
-    /**
-     * Whenever the `song` changes, decide whether to keep playing or not.
-     * - If this change was triggered by the end of the previous track (autoPlayNextSong = true),
-     *   continue playing.
-     * - Otherwise, do not autoplay; user must click play.
-     */
+    // Auto-play logic for next track
     useEffect(() => {
-        if (!song?.videoId) {
-            // No valid song: reset states
-            setIsPlaying(false);
-            setAutoPlayNextSong(false);
+        if (!hasSong) {
+            setIsPlaying(false)
+            setAutoPlayNextSong(false)
         } else {
             if (autoPlayNextSong) {
-                setIsPlaying(true);
-                setAutoPlayNextSong(false);
+                setIsPlaying(true)
+                setAutoPlayNextSong(false)
             } else {
-                // Do NOT auto-play if the user manually selected or skipped to this song
-                setIsPlaying(false);
+                // Start paused unless we explicitly said to auto-play
+                setIsPlaying(false)
             }
         }
-    }, [song, autoPlayNextSong]);
+    }, [song, autoPlayNextSong, hasSong])
 
-    // Play/Pause toggle (only disabled if no valid song at all)
     const handlePlayPause = () => {
-        if (!hasSong) return; // do nothing if there's no valid song loaded
-        setIsPlaying((prev) => !prev);
-    };
+        if (!hasSong) return
+        setIsPlaying((prev) => !prev)
+    }
 
-    // Keep track of current playback progress (in seconds)
     const handleProgress = (state) => {
-        setPlayedSeconds(state.playedSeconds);
-    };
+        setPlayedSeconds(state.playedSeconds)
+    }
 
-    // Once we know the total duration
     const handleDuration = (dur) => {
-        setDuration(dur);
-    };
+        setDuration(dur)
+    }
 
-    // Seek to a specific time on the timeline
     const handleSeek = (e) => {
-        const newTime = parseFloat(e.target.value);
-        setPlayedSeconds(newTime);
-        if (playerRef.current) {
-            playerRef.current.seekTo(newTime, 'seconds');
+        const newTime = parseFloat(e.target.value)
+        setPlayedSeconds(newTime)
+        if (audioPlayerRef.current) {
+            audioPlayerRef.current.seekTo(newTime, 'seconds')
         }
-    };
+        if (reelsPlayerRef.current) {
+            reelsPlayerRef.current.seekTo(newTime, 'seconds')
+        }
+    }
 
-    // When the track finishes:
-    // - If we are in the Liked Songs panel and the track was actually playing, skip to the next liked song
-    // - Then set autoPlayNextSong so that the newly loaded song continues playing
     const handleTrackEnd = () => {
         if (isPlaying && isLikedPanelActive && onNextLikedSong) {
-            setAutoPlayNextSong(true);
-            onNextLikedSong();
+            setAutoPlayNextSong(true)
+            onNextLikedSong()
         }
-    };
+    }
 
-    // Helper: format time as mm:ss
     const formatTime = (time) => {
-        if (!time || isNaN(time)) return '0:00';
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60).toString().padStart(2, '0');
-        return `${minutes}:${seconds}`;
-    };
+        if (!time || isNaN(time)) return '0:00'
+        const minutes = Math.floor(time / 60)
+        const seconds = Math.floor(time % 60).toString().padStart(2, '0')
+        return `${minutes}:${seconds}`
+    }
 
     return (
-        <div
-            className="w-full h-full bg-black bg-opacity-60 backdrop-blur-sm flex items-center text-white px-4 md:px-8">
+        <div className="w-full h-full bg-black bg-opacity-60 backdrop-blur-sm flex items-center text-white px-4 md:px-8 relative">
 
-            {/* Left Section: Cover/Info + Like Button */}
+            {/* (1) Left Section: Song Info + Like + Expand */}
             <div className="flex items-center w-1/3 min-w-0">
-                <NowPlaying title={song?.title} artist={song?.artist}/>
+                <NowPlaying title={song?.title} artist={song?.artist} />
 
-                {/* Like button (only if we have a valid song) */}
                 {hasSong && (
-                    <button
-                        className="ml-4 text-pink-400 hover:text-pink-300 transition-colors"
-                        onClick={() => onLikeToggle?.(song, isCurrentTrackLiked)}
-                    >
-                        {isCurrentTrackLiked ? (
-                            <MdFavorite size={24}/>
-                        ) : (
-                            <MdFavoriteBorder size={24}/>
-                        )}
-                    </button>
+                    <>
+                        {/* Like Button */}
+                        <button
+                            className="ml-4 text-pink-400 hover:text-pink-300 transition-colors"
+                            onClick={() => onLikeToggle?.(song, isCurrentTrackLiked)}
+                        >
+                            {isCurrentTrackLiked ? <MdFavorite size={24} /> : <MdFavoriteBorder size={24} />}
+                        </button>
+
+                        {/* Expand/Close Reels (Desktop only) */}
+                        <button
+                            className="hidden lg:block ml-4 text-blue-400 hover:text-blue-300 transition-colors"
+                            onClick={() => setShowVideo((prev) => !prev)}
+                        >
+                            {showVideo ? <MdClose size={24} /> : <MdOpenInFull size={24} />}
+                        </button>
+                    </>
                 )}
             </div>
 
-            {/* Middle Section: Controls + Seekbar */}
+            {/* (2) Middle Controls: Prev / Play/Pause / Next */}
             <div className="w-1/3 md:static absolute bottom-[40rem] -right-4 flex flex-col items-center justify-center">
-                <div className=" justify-center items-center space-x-6">
-
-                    {/* Prev/Next only if Liked panel is active */}
+                <div className="justify-center items-center space-x-6">
                     {isLikedPanelActive && (
                         <button
                             className="hover:text-pink-400 transition-colors md:static absolute top-[33rem] right-[23rem]"
                             onClick={onPrevLikedSong}
                             disabled={!hasSong}
                         >
-                            <MdSkipPrevious size={28}/>
+                            <MdSkipPrevious size={28} />
                         </button>
                     )}
 
-                    {/* Play/Pause */}
                     <button
                         className={`bg-purple-600 hover:bg-purple-500 transition-colors rounded-full p-2 md:static absolute top-[32rem] right-[12rem] ${
                             !hasSong ? 'opacity-50 cursor-not-allowed' : ''
@@ -148,24 +139,23 @@ export default function MusicPlayer({
                         onClick={handlePlayPause}
                         disabled={!hasSong}
                     >
-                        {isPlaying ? <MdPause size={28}/> : <MdPlayArrow size={28}/>}
+                        {isPlaying ? <MdPause size={28} /> : <MdPlayArrow size={28} />}
                     </button>
 
                     {isLikedPanelActive && (
                         <button
-                            className="hover:text-pink-400 transition-colors md:static absolute top-[33rem] right-[2rem]  "
+                            className="hover:text-pink-400 transition-colors md:static absolute top-[33rem] right-[2rem]"
                             onClick={onNextLikedSong}
                             disabled={!hasSong}
                         >
-                            <MdSkipNext size={28}/>
+                            <MdSkipNext size={28} />
                         </button>
                     )}
                 </div>
-
-                {/* Seek bar (Desktop only) */}
-
             </div>
-            <div className="hidden md:flex items-center space-x-4 mt-2 w-[33%] ">
+
+            {/* (3) Seek bar (desktop only) */}
+            <div className="hidden md:flex items-center space-x-4 mt-2 w-[33%]">
                 <span className="text-sm">{formatTime(playedSeconds)}</span>
                 <input
                     type="range"
@@ -180,13 +170,12 @@ export default function MusicPlayer({
                 <span className="text-sm">{formatTime(duration)}</span>
             </div>
 
-
-            {/* ReactPlayer: Invisible but manages YouTube playback */}
+            {/* (4) AUDIO-ONLY PLAYER */}
             {hasSong && (
                 <ReactPlayer
-                    ref={playerRef}
+                    ref={audioPlayerRef}
                     url={`https://www.youtube.com/watch?v=${song.videoId}`}
-                    playing={isPlaying}
+                    playing={!showVideo && isPlaying}
                     onProgress={handleProgress}
                     onDuration={handleDuration}
                     onEnded={handleTrackEnd}
@@ -194,10 +183,56 @@ export default function MusicPlayer({
                     height="0"
                     config={{
                         youtube: {
-                            playerVars: {disablekb: 1}
+                            playerVars: {
+                                disablekb: 1,
+                                // No need for "vq" here because it's audio-only
+                            }
                         }
                     }}
                 />
+            )}
+
+            {/* (5) REELS-STYLE VIDEO PLAYER (desktop) */}
+            {hasSong && (
+                <div
+                    className={`
+            hidden lg:flex fixed bottom-20 right-0 z-50
+            transform transition-transform duration-500
+            rounded-2xl bg-black
+            ${showVideo ? 'translate-x-0' : 'translate-x-full'}
+            // Dimensions for large screens, adjust as you see fit
+             h-[700px] w-[360px]
+          `}
+                >
+                    <div className="relative w-full h-full overflow-hidden rounded-2xl">
+                        <ReactPlayer
+                            ref={reelsPlayerRef}
+                            url={`https://www.youtube.com/watch?v=${song.videoId}`}
+                            playing={showVideo && isPlaying}
+                            onProgress={handleProgress}
+                            onDuration={handleDuration}
+                            onEnded={handleTrackEnd}
+                            // We'll enlarge the video but also request HD
+                            width="120%"
+                            height="100%"
+                            className="absolute top-1/2 left-1/2"
+                            style={{
+                                transform: 'translate(-50%, -50%) scale(4)',
+                                transformOrigin: 'center center'
+                            }}
+                            config={{
+                                youtube: {
+                                    playerVars: {
+                                        disablekb: 1,
+                                        playsinline: 1,
+                                        // Request 1080p playback (YouTube may or may not honor)
+                                        vq: 'hd1080'
+                                    }
+                                }
+                            }}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     )
