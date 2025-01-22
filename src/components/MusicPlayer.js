@@ -7,10 +7,10 @@ import {
     MdSkipNext,
     MdPlayArrow,
     MdPause,
-    MdOpenInFull,
-    MdClose
+    MdMovie,
 } from 'react-icons/md'
-import NowPlaying from './NowPlaying'
+import { LuShrink } from "react-icons/lu";
+import { motion } from 'framer-motion'
 
 export default function MusicPlayer({
                                         song,
@@ -24,20 +24,30 @@ export default function MusicPlayer({
     const [duration, setDuration] = useState(0)
     const [isPlaying, setIsPlaying] = useState(false)
     const [autoPlayNextSong, setAutoPlayNextSong] = useState(false)
+    const [showVideo, setShowVideo] = useState(false) // For the Reels-style video
 
-    // Whether the "Reels" style player is shown on the right (desktop)
-    const [showVideo, setShowVideo] = useState(false)
+    const audioPlayerRef = useRef(null)
+    const reelsPlayerRef = useRef(null)
 
-    const audioPlayerRef = useRef(null) // For the hidden audio player
-    const reelsPlayerRef = useRef(null) // For the reels player
+    // Does the passed-in song have a valid YouTube videoId?
     const hasSong = Boolean(song?.videoId)
 
-    // Is current track in liked songs?
-    const isCurrentTrackLiked = likedSongs.some(
-        (item) => item.videoId === song?.videoId
-    )
+    // Provide default values when there's no valid song
+    const defaultSong = {
+        title: 'Neon Nights',
+        artist: 'Cyber punk',
+        imageUrl: 'logo.png',   // Assuming "logo.png" is in the same folder
+        videoId: ''
+    }
 
-    // Auto-play logic for next track
+    // Use either the actual song or fallback to the defaults
+    const currentSong = hasSong ? song : defaultSong
+    const { videoId, title, artist, imageUrl } = currentSong
+
+    // Check if current track is liked
+    const isCurrentTrackLiked = likedSongs.some((item) => item.videoId === videoId)
+
+    // Handle auto-play logic (like skipping to next in liked panel)
     useEffect(() => {
         if (!hasSong) {
             setIsPlaying(false)
@@ -47,11 +57,11 @@ export default function MusicPlayer({
                 setIsPlaying(true)
                 setAutoPlayNextSong(false)
             } else {
-                // Start paused unless we explicitly said to auto-play
+                // Default to paused if not explicitly auto-playing
                 setIsPlaying(false)
             }
         }
-    }, [song, autoPlayNextSong, hasSong])
+    }, [song, hasSong, autoPlayNextSong])
 
     const handlePlayPause = () => {
         if (!hasSong) return
@@ -69,6 +79,7 @@ export default function MusicPlayer({
     const handleSeek = (e) => {
         const newTime = parseFloat(e.target.value)
         setPlayedSeconds(newTime)
+
         if (audioPlayerRef.current) {
             audioPlayerRef.current.seekTo(newTime, 'seconds')
         }
@@ -84,6 +95,7 @@ export default function MusicPlayer({
         }
     }
 
+    // Convert seconds to MM:SS
     const formatTime = (time) => {
         if (!time || isNaN(time)) return '0:00'
         const minutes = Math.floor(time / 60)
@@ -93,35 +105,57 @@ export default function MusicPlayer({
 
     return (
         <div className="w-full h-full bg-black bg-opacity-60 backdrop-blur-sm flex items-center text-white px-4 md:px-8 relative">
+            {/* (1) Left Section: Thumbnail, Title/Artist, and Like Button */}
+            <div className="flex items-center md:w-[30%] min-w-0">
+                {/* Image + Text in one flex row (with possible grow) */}
+                <div className="flex items-center min-w-0 flex-grow space-x-4">
+                    {/* Thumbnail */}
+                    <img
+                        src={imageUrl}
+                        alt={title}
+                        className="w-20 h-10 object-cover rounded-t-lg"
+                    />
 
-            {/* (1) Left Section: Song Info + Like + Expand */}
-            <div className="flex items-center w-1/3 min-w-0">
-                <NowPlaying title={song?.title} artist={song?.artist} />
+                    {/* Title & Artist (truncate so long text doesn't push the button) */}
+                    <div className="flex flex-col min-w-0">
+                        <motion.div
+                            initial={{ y: 10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-lg font-bold truncate"
+                        >
+                            {title}
+                        </motion.div>
+                        <motion.div
+                            initial={{ y: 10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-sm text-purple-200 truncate"
+                        >
+                            {artist}
+                        </motion.div>
+                    </div>
+                </div>
 
+                {/* Like Button (kept separate, so it doesn't shift) */}
                 {hasSong && (
-                    <>
-                        {/* Like Button */}
-                        <button
-                            className="ml-4 text-pink-400 hover:text-pink-300 transition-colors"
-                            onClick={() => onLikeToggle?.(song, isCurrentTrackLiked)}
-                        >
-                            {isCurrentTrackLiked ? <MdFavorite size={24} /> : <MdFavoriteBorder size={24} />}
-                        </button>
-
-                        {/* Expand/Close Reels (Desktop only) */}
-                        <button
-                            className="hidden lg:block ml-4 text-blue-400 hover:text-blue-300 transition-colors"
-                            onClick={() => setShowVideo((prev) => !prev)}
-                        >
-                            {showVideo ? <MdClose size={24} /> : <MdOpenInFull size={24} />}
-                        </button>
-                    </>
+                    <button
+                        className="ml-4 text-pink-400 hover:text-pink-300 transition-colors"
+                        onClick={() => onLikeToggle?.(currentSong, isCurrentTrackLiked)}
+                    >
+                        {isCurrentTrackLiked ? (
+                            <MdFavorite size={24} />
+                        ) : (
+                            <MdFavoriteBorder size={24} />
+                        )}
+                    </button>
                 )}
             </div>
 
-            {/* (2) Middle Controls: Prev / Play/Pause / Next */}
-            <div className="w-1/3 md:static absolute bottom-[40rem] -right-4 flex flex-col items-center justify-center">
-                <div className="justify-center items-center space-x-6">
+            {/* (2) Middle Controls + (3) Seek bar (hidden on mobile) */}
+            <div className="w-[40%] md:static absolute bottom-[40rem] -right-4 flex flex-col items-center justify-center">
+                {/* Controls row */}
+                <div className="flex justify-center items-center space-x-6">
                     {isLikedPanelActive && (
                         <button
                             className="hover:text-pink-400 transition-colors md:static absolute top-[33rem] right-[23rem]"
@@ -151,30 +185,40 @@ export default function MusicPlayer({
                             <MdSkipNext size={28} />
                         </button>
                     )}
+
+                    {/* Expand/Close button for the Reels-style video */}
+                    {hasSong && (
+                        <button
+                            className="hidden lg:block absolute right-10 text-blue-400 hover:text-blue-300 transition-colors"
+                            onClick={() => setShowVideo((prev) => !prev)}
+                        >
+                            {showVideo ? <LuShrink size={24} /> : <MdMovie size={24} />}
+                        </button>
+                    )}
+                </div>
+
+                {/* Seek bar (desktop only) */}
+                <div className="hidden md:flex items-center space-x-4 mt-3 w-full justify-center">
+                    <span className="text-sm">{formatTime(playedSeconds)}</span>
+                    <input
+                        type="range"
+                        className="flex-1 h-1 bg-gray-300 rounded-full cursor-pointer"
+                        min="0"
+                        max={duration}
+                        step="1"
+                        value={playedSeconds}
+                        onChange={handleSeek}
+                        disabled={!hasSong}
+                    />
+                    <span className="text-sm">{formatTime(duration)}</span>
                 </div>
             </div>
 
-            {/* (3) Seek bar (desktop only) */}
-            <div className="hidden md:flex items-center space-x-4 mt-2 w-[33%]">
-                <span className="text-sm">{formatTime(playedSeconds)}</span>
-                <input
-                    type="range"
-                    className="flex-1 h-1 bg-gray-300 rounded-full cursor-pointer"
-                    min="0"
-                    max={duration}
-                    step="1"
-                    value={playedSeconds}
-                    onChange={handleSeek}
-                    disabled={!hasSong}
-                />
-                <span className="text-sm">{formatTime(duration)}</span>
-            </div>
-
-            {/* (4) AUDIO-ONLY PLAYER */}
+            {/* (4) AUDIO-ONLY PLAYER (hidden visually) */}
             {hasSong && (
                 <ReactPlayer
                     ref={audioPlayerRef}
-                    url={`https://www.youtube.com/watch?v=${song.videoId}`}
+                    url={`https://www.youtube.com/watch?v=${videoId}`}
                     playing={!showVideo && isPlaying}
                     onProgress={handleProgress}
                     onDuration={handleDuration}
@@ -184,35 +228,31 @@ export default function MusicPlayer({
                     config={{
                         youtube: {
                             playerVars: {
-                                disablekb: 1,
-                                // No need for "vq" here because it's audio-only
+                                disablekb: 1
                             }
                         }
                     }}
                 />
             )}
 
-            {/* (5) REELS-STYLE VIDEO PLAYER (desktop) */}
+            {/* (5) REELS-STYLE VIDEO (Desktop) */}
             {hasSong && (
                 <div
                     className={`
-            hidden lg:flex fixed bottom-20 right-0 z-50
-            transform transition-transform duration-500
-            rounded-2xl bg-black
+            hidden lg:flex fixed bottom-44 right-0 z-50 transform transition-transform duration-500
+            rounded-tl-lg bg-black
             ${showVideo ? 'translate-x-0' : 'translate-x-full'}
-            // Dimensions for large screens, adjust as you see fit
-             h-[700px] w-[360px]
+            h-[650px] 2xl:h-[700px] w-[360px]
           `}
                 >
-                    <div className="relative w-full h-full overflow-hidden rounded-2xl">
+                    <div className="relative w-full h-full overflow-hidden rounded-tl-lg">
                         <ReactPlayer
                             ref={reelsPlayerRef}
-                            url={`https://www.youtube.com/watch?v=${song.videoId}`}
+                            url={`https://www.youtube.com/watch?v=${videoId}`}
                             playing={showVideo && isPlaying}
                             onProgress={handleProgress}
                             onDuration={handleDuration}
                             onEnded={handleTrackEnd}
-                            // We'll enlarge the video but also request HD
                             width="120%"
                             height="100%"
                             className="absolute top-1/2 left-1/2"
@@ -225,15 +265,42 @@ export default function MusicPlayer({
                                     playerVars: {
                                         disablekb: 1,
                                         playsinline: 1,
-                                        // Request 1080p playback (YouTube may or may not honor)
                                         vq: 'hd1080'
                                     }
                                 }
                             }}
                         />
                     </div>
+
+                    {/* Title/Artist overlay at bottom of the Reels-style video */}
+                    <div className="absolute w-[360px] h-[10rem] 2xl:h-[12rem] top-[36rem] 2xl:top-[37rem] z-10 p-2 bg-black/60 rounded-bl-lg text-white overflow-hidden">
+                        <div className="flex h-10 w-full items-center justify-center gap-1">
+                            {Array.from({ length: 20 }).map((_, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ height: '20%' }}
+                                    animate={{ height: ['20%', '90%', '20%'] }}
+                                    transition={{
+                                        duration: 0.8,
+                                        repeat: Infinity,
+                                        delay: i * 0.1,
+                                        ease: 'easeInOut'
+                                    }}
+                                    className="w-1 bg-gradient-to-t from-purple-500 to-blue-500 rounded-full"
+                                />
+                            ))}
+                        </div>
+                        <h3 className="font-semibold text-lg">
+                            {title || 'Unknown Title'}
+                        </h3>
+                        <p className="text-sm text-gray-200">
+                            {artist || 'Unknown Artist'}
+                        </p>
+                    </div>
                 </div>
             )}
         </div>
     )
 }
+
+
