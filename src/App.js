@@ -9,11 +9,11 @@ import {
     fetchRecentlyPlayed,
     saveRecentlyPlayed,
     removeRecentlyPlayedSong,
-} from "./firebase"; // Firebase integration
+} from "./firebase";
 import AnimatedBackground from "./components/AnimatedBackground";
 import Visualizer from "./components/Visualizer";
 import Navbar from "./components/Navbar";
-import MobileNavbar from "./components/MobileNavbar"; // Import MobileNavbar
+import MobileNavbar from "./components/MobileNavbar"; 
 import SearchBarDialog from "./components/SearchBarDialog";
 import ProfileDialog from "./components/ProfileDialog";
 import MusicPlayer from "./components/MusicPlayer";
@@ -27,9 +27,9 @@ export default function App() {
     const [currentSong, setCurrentSong] = useState(null);
     const [recentlyPlayed, setRecentlyPlayed] = useState([]);
     const [likedSongs, setLikedSongs] = useState([]);
-    const [user, setUser] = useState(null); // Manage user authentication state
+    const [user, setUser] = useState(null); 
 
-    // Determine if the main content should be blurred based on active panels
+    // If the main content should be blurred based on active panels
     const shouldBlur = ["search", "profile", "settings"].includes(activePanel);
 
     useEffect(() => {

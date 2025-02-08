@@ -4,12 +4,11 @@ import { MdHome, MdSearch, MdPerson, MdFavorite, MdLogin } from 'react-icons/md'
 import { CiLogout } from 'react-icons/ci';
 import PropTypes from 'prop-types';
 
-export default function MobileNavbar({
-                                         activePanel,
+export default function MobileNavbar({ activePanel,
                                          setActivePanel,
-                                         user,          // New prop for user authentication state
-                                         onSignIn,      // New prop for sign-in function
-                                         onSignOut,     // New prop for sign-out function
+                                         user,          
+                                         onSignIn,      
+                                         onSignOut,     
                                      }) {
     // Helper function to toggle the panel
     const togglePanel = (panel) =>
@@ -76,7 +75,7 @@ export default function MobileNavbar({
 MobileNavbar.propTypes = {
     activePanel: PropTypes.string.isRequired,
     setActivePanel: PropTypes.func.isRequired,
-    user: PropTypes.object,               // User object or null
-    onSignIn: PropTypes.func.isRequired,  // Function to handle sign-in
-    onSignOut: PropTypes.func.isRequired, // Function to handle sign-out
+    user: PropTypes.object,               
+    onSignIn: PropTypes.func.isRequired,  
+    onSignOut: PropTypes.func.isRequired, 
 };

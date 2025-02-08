@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { MdClose, MdContentCopy } from "react-icons/md";
-import { FaSpinner } from "react-icons/fa"; // Import spinner icon
+import { FaSpinner } from "react-icons/fa";
 import { createShare, auth } from "../firebase";
 import { toast } from "react-hot-toast";
 
@@ -45,7 +45,7 @@ export default function ShareDialog({ onClose, likedSongs }) {
 
     const handleCopy = () => {
         if (shareId) {
-            setIsCopying(true); // Set copying state to true
+            setIsCopying(true); 
             navigator.clipboard.writeText(shareId)
                 .then(() => {
                     toast.success("Share ID copied to clipboard!", {

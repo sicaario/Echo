@@ -33,7 +33,7 @@ export default function NowPlaying({
 
         const animate = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'rgba(147, 51, 234, 0.5)'; // Purple glow
+            ctx.fillStyle = 'rgba(147, 51, 234, 0.5)'; 
 
             dots.forEach((dot) => {
                 dot.y -= dot.speed;

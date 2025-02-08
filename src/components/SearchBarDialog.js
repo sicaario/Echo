@@ -21,7 +21,7 @@ export default function SearchBarDialog({ onClose, setSong }) {
             return
         }
 
-        const API_KEY = 'AIzaSyC-Pm8v6RUZa68yvF9Y30tbhAhmLuszs6Y' // Replace with your actual API key
+        const API_KEY = 'AIzaSyC-Pm8v6RUZa68yvF9Y30tbhAhmLuszs6Y' 
         const API_URL = `https://www.googleapis.com/youtube/v3/search`
 
         setIsLoading(true)
@@ -41,7 +41,7 @@ export default function SearchBarDialog({ onClose, setSong }) {
                 title: item.snippet.title,
                 artist: item.snippet.channelTitle,
                 videoId: item.id.videoId,
-                // Use 'high' thumbnail if available, fallback to 'medium' or 'default'
+
                 imageUrl:
                     item.snippet.thumbnails.high?.url ||
                     item.snippet.thumbnails.medium?.url ||
@@ -58,7 +58,7 @@ export default function SearchBarDialog({ onClose, setSong }) {
 
     // Handle form submission
     const handleSubmit = (e) => {
-        e.preventDefault() // Prevents the default form submission behavior
+        e.preventDefault() 
         fetchSuggestions()
     }
 
@@ -83,14 +83,14 @@ export default function SearchBarDialog({ onClose, setSong }) {
                     onChange={(e) => setQuery(e.target.value)}
                 />
                 <button
-                    type="submit" // This button now submits the form
+                    type="submit" 
                     className="text-gray-300 hover:text-gray-100 transition-colors"
                     aria-label="Search"
                 >
                     <MdSearch size={24} />
                 </button>
                 <button
-                    type="button" // Specifies that this button is not a submit button
+                    type="button" 
                     onClick={onClose}
                     className="text-gray-300 hover:text-gray-100 transition-colors"
                     aria-label="Close"

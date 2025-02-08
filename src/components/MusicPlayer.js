@@ -24,19 +24,19 @@ export default function MusicPlayer({
     const [duration, setDuration] = useState(0)
     const [isPlaying, setIsPlaying] = useState(false)
     const [autoPlayNextSong, setAutoPlayNextSong] = useState(false)
-    const [showVideo, setShowVideo] = useState(false) // For the Reels-style video
+    const [showVideo, setShowVideo] = useState(false)
 
     const audioPlayerRef = useRef(null)
     const reelsPlayerRef = useRef(null)
 
-    // Does the passed-in song have a valid YouTube videoId?
+
     const hasSong = Boolean(song?.videoId)
 
     // Provide default values when there's no valid song
     const defaultSong = {
         title: 'Neon Nights',
         artist: 'Cyber punk',
-        imageUrl: 'logo.png',   // Assuming "logo.png" is in the same folder
+        imageUrl: 'logo.png',
         videoId: ''
     }
 
@@ -47,7 +47,7 @@ export default function MusicPlayer({
     // Check if current track is liked
     const isCurrentTrackLiked = likedSongs.some((item) => item.videoId === videoId)
 
-    // Handle auto-play logic (like skipping to next in liked panel)
+    // Handle auto-play logic (like skipping to next in liked panel
     useEffect(() => {
         if (!hasSong) {
             setIsPlaying(false)
@@ -214,7 +214,7 @@ export default function MusicPlayer({
                 </div>
             </div>
 
-            {/* (4) AUDIO-ONLY PLAYER (hidden visually) */}
+            {/*AUDIO-ONLY PLAYER (hidden visually) */}
             {hasSong && (
                 <ReactPlayer
                     ref={audioPlayerRef}
@@ -235,14 +235,14 @@ export default function MusicPlayer({
                 />
             )}
 
-            {/* (5) REELS-STYLE VIDEO (Desktop) */}
+            {/* REELS-STYLE VIDEO (Desktop) */}
             {hasSong && (
                 <div
                     className={`
-            hidden lg:flex fixed bottom-44 right-0 z-50 transform transition-transform duration-500
+            hidden lg:flex fixed 2xl:bottom-20 bottom-[166px] right-0 z-50 transform transition-transform duration-500
             rounded-tl-lg bg-black
             ${showVideo ? 'translate-x-0' : 'translate-x-full'}
-            h-[650px] 2xl:h-[700px] w-[360px]
+            h-[710px] 2xl:h-[950px] 2xl:w-[50%] w-[50%]
           `}
                 >
                     <div className="relative w-full h-full overflow-hidden rounded-tl-lg">
@@ -257,7 +257,7 @@ export default function MusicPlayer({
                             height="100%"
                             className="absolute top-1/2 left-1/2"
                             style={{
-                                transform: 'translate(-50%, -50%) scale(4)',
+                                transform: 'translate(-50%, -50%) scale(2)',
                                 transformOrigin: 'center center'
                             }}
                             config={{
@@ -273,7 +273,7 @@ export default function MusicPlayer({
                     </div>
 
                     {/* Title/Artist overlay at bottom of the Reels-style video */}
-                    <div className="absolute w-[360px] h-[10rem] 2xl:h-[12rem] top-[36rem] 2xl:top-[37rem] z-10 p-2 bg-black/60 rounded-bl-lg text-white overflow-hidden">
+                    <div className="absolute 2xl:w-full w-full h-[8rem] 2xl:h-[8rem] top-[668px] 2xl:top-[822px] z-10 p-2 bg-black/60  text-white overflow-hidden">
                         <div className="flex h-10 w-full items-center justify-center gap-1">
                             {Array.from({ length: 20 }).map((_, i) => (
                                 <motion.div

@@ -1,11 +1,11 @@
 // src/components/RecentlyPlayed.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FaTrash } from 'react-icons/fa'; // Ensure react-icons is installed
+import { FaTrash } from 'react-icons/fa'; 
 
 export default function RecentlyPlayed({ songs, onSelectSong, onDeleteSong }) {
     if (!songs.length) {
-        return null; // Hide section if no songs have been played
+        return null; 
     }
 
     return (
@@ -58,5 +58,5 @@ RecentlyPlayed.propTypes = {
         })
     ).isRequired,
     onSelectSong: PropTypes.func.isRequired,
-    onDeleteSong: PropTypes.func.isRequired, // Ensure this prop is required
+    onDeleteSong: PropTypes.func.isRequired, 
 };

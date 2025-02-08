@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { MdClose } from "react-icons/md"; // Import the close icon
+import { MdClose } from "react-icons/md"; 
 
 export default function ProfileDialog({ onClose, user }) {
     return (

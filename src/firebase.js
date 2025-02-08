@@ -25,7 +25,6 @@ const firebaseConfig = {
     measurementId: "G-PLMQQ5RNCD",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
@@ -177,7 +176,7 @@ const removeRecentlyPlayedSong = async (userId, videoId) => {
  */
 const createShare = async (userId, likedSongs) => {
     try {
-        const shareId = nanoid(10); // Generates a 10-character unique ID
+        const shareId = nanoid(10); 
         const shareRef = doc(db, "sharedSongs", shareId);
         await setDoc(shareRef, {
             ownerId: userId,
@@ -225,7 +224,7 @@ export {
     saveLikedSongs,
     fetchRecentlyPlayed,
     saveRecentlyPlayed,
-    removeRecentlyPlayedSong, // Export the new function
+    removeRecentlyPlayedSong, 
     createShare,
     getShare,
 };
