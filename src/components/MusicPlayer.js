@@ -242,7 +242,7 @@ export default function MusicPlayer({
             hidden lg:flex fixed 2xl:bottom-20 bottom-[166px] right-0 z-50 transform transition-transform duration-500
             rounded-tl-lg bg-black
             ${showVideo ? 'translate-x-0' : 'translate-x-full'}
-            h-[750px] 2xl:h-[1000px] 2xl:w-[50%] w-[50%]
+            h-[800px] 2xl:h-[1000px] 2xl:w-[50%] w-[50%]
           `}
                 >
                     <div className="relative w-full h-full overflow-hidden rounded-tl-lg">
@@ -253,7 +253,7 @@ export default function MusicPlayer({
                             onProgress={handleProgress}
                             onDuration={handleDuration}
                             onEnded={handleTrackEnd}
-                            width="120%"
+                            width="130%"
                             height="100%"
                             className="absolute top-1/2 left-1/2"
                             style={{
