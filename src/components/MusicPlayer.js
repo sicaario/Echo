@@ -242,7 +242,7 @@ export default function MusicPlayer({
             hidden lg:flex fixed 2xl:bottom-20 bottom-[166px] right-0 z-50 transform transition-transform duration-500
             rounded-tl-lg bg-black
             ${showVideo ? 'translate-x-0' : 'translate-x-full'}
-            h-[730px] 2xl:h-[1000px] 2xl:w-[50%] w-[50%]
+            h-[760px] 2xl:h-[1000px] 2xl:w-[50%] w-[50%]
           `}
                 >
                     <div className="relative w-full h-full overflow-hidden rounded-tl-lg">
@@ -253,7 +253,7 @@ export default function MusicPlayer({
                             onProgress={handleProgress}
                             onDuration={handleDuration}
                             onEnded={handleTrackEnd}
-                            width="130%"
+                            width="136%"
                             height="100%"
                             className="absolute top-1/2 left-1/2"
                             style={{
@@ -273,7 +273,7 @@ export default function MusicPlayer({
                     </div>
 
                     {/* Title/Artist overlay at bottom of the Reels-style video */}
-                    <div className="absolute 2xl:w-full w-full h-[8rem] 2xl:h-[7rem] top-[690px] 2xl:top-[890px] z-10 p-2 bg-black/60  text-white overflow-hidden">
+                    <div className="absolute 2xl:w-full w-full h-[8rem] 2xl:h-[7rem] top-[720px] 2xl:top-[890px] z-10 p-2 bg-black/60  text-white overflow-hidden">
                         <div className="flex h-10 w-full items-center justify-center gap-1">
                             {Array.from({ length: 20 }).map((_, i) => (
                                 <motion.div
