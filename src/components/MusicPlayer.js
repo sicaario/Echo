@@ -113,7 +113,7 @@ export default function MusicPlayer({
                     <img
                         src={imageUrl}
                         alt={title}
-                        className="w-20 h-10 object-cover rounded-t-lg"
+                        className=" w-16 h-14 object-cover rounded-full"
                     />
 
                     {/* Title & Artist (truncate so long text doesn't push the button) */}
