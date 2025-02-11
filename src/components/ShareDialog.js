@@ -65,7 +65,7 @@ export default function ShareDialog({ onClose, likedSongs }) {
 
     const handleWhatsAppShare = () => {
         if (shareId) {
-            const message = `Hey! Check out my liked songs using this Share ID: ${shareId}`;
+            const message = `Hey! Check out my Playlist at https://echo25.netlify.app/ using this Share ID: ${shareId} `;
             const whatsappURL = `https://wa.me/?text=${encodeURIComponent(
                 message
             )}`;
