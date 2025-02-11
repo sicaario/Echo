@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import ReactPlayer from 'react-player/youtube'
+import { FaYoutube } from "react-icons/fa";
+import { LuPanelRightClose } from "react-icons/lu";
 import {
     MdFavoriteBorder,
     MdFavorite,
@@ -7,9 +9,7 @@ import {
     MdSkipNext,
     MdPlayArrow,
     MdPause,
-    MdMovie,
 } from 'react-icons/md'
-import { LuShrink } from "react-icons/lu";
 import { motion } from 'framer-motion'
 
 export default function MusicPlayer({
@@ -192,7 +192,7 @@ export default function MusicPlayer({
                             className="hidden lg:block absolute right-10 text-blue-400 hover:text-blue-300 transition-colors"
                             onClick={() => setShowVideo((prev) => !prev)}
                         >
-                            {showVideo ? <LuShrink size={24} /> : <MdMovie size={24} />}
+                            {showVideo ? <LuPanelRightClose size={27} /> : <FaYoutube size={35} />}
                         </button>
                     )}
                 </div>
