@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import {
     getAuth,
     GoogleAuthProvider,
-    signInWithRedirect,
+    signInWithPopup,
     signOut,
 } from "firebase/auth";
 import {
@@ -31,13 +31,14 @@ const provider = new GoogleAuthProvider();
 const db = getFirestore(app);
 
 /**
- * Sign in with Google using redirect.
- * @returns {Promise<void>} - Initiates redirect to Google sign-in.
+ * Sign in with Google using a popup.
+ * @returns {Promise<Object>} - The authenticated user object.
  * @throws {Error} - If sign-in fails.
  */
 const signInWithGoogle = async () => {
     try {
-        await signInWithRedirect(auth, provider);
+        const result = await signInWithPopup(auth, provider);
+        return result.user;
     } catch (error) {
         console.error("Error during sign-in:", error);
         throw error;

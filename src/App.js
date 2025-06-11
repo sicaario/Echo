@@ -10,7 +10,6 @@ import {
     saveRecentlyPlayed,
     removeRecentlyPlayedSong,
 } from "./firebase";
-import { getRedirectResult } from "firebase/auth";
 import { getSpotifyRecommendations, searchSpotifyTracks } from "./services/spotifyService";
 import Sidebar from "./components/Sidebar";
 import MainContent from "./components/MainContent";
@@ -59,26 +58,6 @@ export default function App() {
                 setRecommendations([]);
             }
         });
-
-        // Handle redirect result from Google sign-in
-        const handleRedirectResult = async () => {
-            try {
-                const result = await getRedirectResult(auth);
-                if (result && result.user) {
-                    toast.success(`Welcome, ${result.user.displayName}!`, {
-                        position: "top-right",
-                    });
-                }
-            } catch (error) {
-                console.error("Error handling redirect result:", error);
-                toast.error(`Sign in failed: ${error.message}`, {
-                    position: "top-right",
-                });
-            }
-        };
-
-        handleRedirectResult();
-
         return () => unsubscribe();
     }, []);
 
@@ -100,8 +79,11 @@ export default function App() {
 
     const handleSignIn = async () => {
         try {
-            await signInWithGoogle();
-            // Note: No need to handle the result here as it will redirect
+            const signedInUser = await signInWithGoogle();
+            setUser(signedInUser);
+            toast.success(`Welcome, ${signedInUser.displayName}!`, {
+                position: "top-right",
+            });
         } catch (error) {
             console.error("Error during sign-in:", error.message);
             toast.error(`Sign in failed: ${error.message}`, {
