@@ -83,9 +83,18 @@ export default function App() {
             });
         } catch (error) {
             console.error("Error during sign-in:", error.message);
-            toast.error(`Sign in failed: ${error.message}`, {
-                position: "top-right",
-            });
+            
+            // Check if the error is specifically due to popup being blocked
+            if (error.code === 'auth/popup-blocked') {
+                toast.error("Sign-in popup was blocked by your browser. Please disable your popup blocker or allow popups for this site and try again.", {
+                    position: "top-right",
+                    duration: 6000, // Show longer for this important message
+                });
+            } else {
+                toast.error(`Sign in failed: ${error.message}`, {
+                    position: "top-right",
+                });
+            }
         }
     };
 
