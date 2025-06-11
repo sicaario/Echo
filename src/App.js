@@ -11,10 +11,9 @@ import {
     removeRecentlyPlayedSong,
 } from "./firebase";
 import { searchSpotifyTracks } from "./services/spotifyService";
-import { getEnhancedRecommendations } from "./services/enhancedRecommendationService";
-import EnhancedSidebar from "./components/EnhancedSidebar";
+import Sidebar from "./components/Sidebar";
 import MainContent from "./components/MainContent";
-import EnhancedMusicPlayer from "./components/EnhancedMusicPlayer";
+import MusicPlayer from "./components/MusicPlayer";
 import SearchDialog from "./components/SearchDialog";
 import ProfileDialog from "./components/ProfileDialog";
 import { AnimatePresence } from "framer-motion";
@@ -42,16 +41,8 @@ export default function App() {
                     const fetchedRecentlyPlayed = await fetchRecentlyPlayed(currentUser.uid);
                     setRecentlyPlayed(fetchedRecentlyPlayed);
                     
-                    // Get enhanced recommendations
-                    if (fetchedLikedSongs.length > 0 || fetchedRecentlyPlayed.length > 0) {
-                        const recs = await getEnhancedRecommendations({
-                            likedSongs: fetchedLikedSongs,
-                            recentlyPlayed: fetchedRecentlyPlayed,
-                            timeOfDay: getTimeOfDay(),
-                            mood: 'neutral'
-                        });
-                        setRecommendations(recs);
-                    }
+                    // Simple recommendations - just use some sample data for now
+                    setRecommendations([]);
                 } catch (error) {
                     console.error("Error fetching songs:", error);
                     toast.error("Failed to fetch songs.", {
@@ -82,14 +73,6 @@ export default function App() {
         window.addEventListener("beforeunload", saveSongsOnUnload);
         return () => window.removeEventListener("beforeunload", saveSongsOnUnload);
     }, [user, likedSongs, recentlyPlayed]);
-
-    const getTimeOfDay = () => {
-        const hour = new Date().getHours();
-        if (hour < 12) return 'morning';
-        if (hour < 18) return 'afternoon';
-        if (hour < 22) return 'evening';
-        return 'night';
-    };
 
     const handleSignIn = async () => {
         try {
@@ -153,21 +136,6 @@ export default function App() {
                 return [song, ...prev];
             }
         });
-
-        // Update recommendations when liked songs change
-        if (!isCurrentlyLiked && likedSongs.length >= 0) {
-            try {
-                const recs = await getEnhancedRecommendations({
-                    likedSongs: [...likedSongs, song],
-                    recentlyPlayed,
-                    timeOfDay: getTimeOfDay(),
-                    mood: 'neutral'
-                });
-                setRecommendations(recs);
-            } catch (error) {
-                console.error("Error updating recommendations:", error);
-            }
-        }
     };
 
     const handleDeleteSong = async (songId) => {
@@ -212,8 +180,8 @@ export default function App() {
             <Toaster position="top-right" reverseOrder={false} />
             
             <div className="flex flex-1 min-h-0">
-                {/* Enhanced Sidebar */}
-                <EnhancedSidebar
+                {/* Sidebar */}
+                <Sidebar
                     activeView={activeView}
                     setActiveView={setActiveView}
                     user={user}
@@ -238,8 +206,8 @@ export default function App() {
                 />
             </div>
 
-            {/* Enhanced Music Player */}
-            <EnhancedMusicPlayer
+            {/* Music Player */}
+            <MusicPlayer
                 song={currentSong}
                 isPlaying={isPlaying}
                 setIsPlaying={setIsPlaying}
