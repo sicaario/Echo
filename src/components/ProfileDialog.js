@@ -1,44 +1,82 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { MdClose } from "react-icons/md"; 
+import { X, User, Mail, Calendar } from "lucide-react";
 
 export default function ProfileDialog({ onClose, user }) {
     return (
         <motion.div
-            className="fixed top-2 right-[35rem] w-64 z-30 bg-gradient-to-br
-                 from-purple-800 via-black to-gray-900 rounded-lg shadow-lg p-4"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={onClose}
         >
-            {/* Cross Icon for Close */}
-            <div className="absolute top-1 right-4 justify-end">
-                <button
-                    onClick={onClose}
-                    className="text-gray-300 hover:text-gray-100 p-1"
-                    aria-label="Close"
-                >
-                    <MdClose size={20} />
-                </button>
-            </div>
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-gray-900 rounded-lg shadow-2xl w-full max-w-md p-6"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-white">Profile</h2>
+                    <button
+                        onClick={onClose}
+                        className="p-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
 
-            {/* User Information */}
-            {user ? (
-                <div className="flex items-center space-x-3">
+                {/* User Info */}
+                <div className="text-center mb-6">
                     <img
                         src={user.photoURL}
-                        alt="Avatar"
-                        className="w-10 h-10 rounded-full"
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-green-400"
                     />
-                    <div>
-                        <p className="font-bold">{user.displayName}</p>
-                        <p className="text-sm text-gray-400">{user.email}</p>
+                    <h3 className="text-2xl font-bold text-white mb-2">{user.displayName}</h3>
+                    <p className="text-gray-400">{user.email}</p>
+                </div>
+
+                {/* User Details */}
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
+                        <User className="w-5 h-5 text-green-400" />
+                        <div>
+                            <p className="text-sm text-gray-400">Display Name</p>
+                            <p className="text-white font-medium">{user.displayName}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
+                        <Mail className="w-5 h-5 text-green-400" />
+                        <div>
+                            <p className="text-sm text-gray-400">Email</p>
+                            <p className="text-white font-medium">{user.email}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
+                        <Calendar className="w-5 h-5 text-green-400" />
+                        <div>
+                            <p className="text-sm text-gray-400">Member Since</p>
+                            <p className="text-white font-medium">
+                                {new Date(user.metadata.creationTime).toLocaleDateString()}
+                            </p>
+                        </div>
                     </div>
                 </div>
-            ) : (
-                <p className="text-gray-400">No user logged in.</p>
-            )}
+
+                {/* Stats */}
+                <div className="mt-6 p-4 bg-gradient-to-r from-green-900/20 to-blue-900/20 rounded-lg">
+                    <h4 className="text-white font-semibold mb-2">Your Music Stats</h4>
+                    <p className="text-gray-400 text-sm">
+                        Keep listening to unlock personalized insights about your music taste!
+                    </p>
+                </div>
+            </motion.div>
         </motion.div>
     );
 }

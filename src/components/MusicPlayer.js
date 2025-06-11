@@ -1,306 +1,296 @@
-import React, { useState, useRef, useEffect } from 'react'
-import ReactPlayer from 'react-player/youtube'
-import { FaYoutube } from "react-icons/fa";
-import { LuPanelRightClose } from "react-icons/lu";
-import {
-    MdFavoriteBorder,
-    MdFavorite,
-    MdSkipPrevious,
-    MdSkipNext,
-    MdPlayArrow,
-    MdPause,
-} from 'react-icons/md'
-import { motion } from 'framer-motion'
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    Play, 
+    Pause, 
+    SkipBack, 
+    SkipForward, 
+    Heart, 
+    Volume2, 
+    VolumeX,
+    Shuffle,
+    Repeat,
+    Maximize2
+} from 'lucide-react';
+import AudioVisualizer from './AudioVisualizer';
 
-export default function MusicPlayer({
-                                        song,
-                                        likedSongs = [],
-                                        isLikedPanelActive,
-                                        onLikeToggle,
-                                        onPrevLikedSong,
-                                        onNextLikedSong
-                                    }) {
-    const [playedSeconds, setPlayedSeconds] = useState(0)
-    const [duration, setDuration] = useState(0)
-    const [isPlaying, setIsPlaying] = useState(false)
-    const [autoPlayNextSong, setAutoPlayNextSong] = useState(false)
-    const [showVideo, setShowVideo] = useState(false)
+export default function MusicPlayer({ 
+    song, 
+    isPlaying, 
+    setIsPlaying, 
+    likedSongs, 
+    onLikeToggle 
+}) {
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [volume, setVolume] = useState(0.7);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isShuffled, setIsShuffled] = useState(false);
+    const [repeatMode, setRepeatMode] = useState('off'); // 'off', 'all', 'one'
+    const [showVisualizer, setShowVisualizer] = useState(false);
+    
+    const audioRef = useRef(null);
+    const progressRef = useRef(null);
 
-    const audioPlayerRef = useRef(null)
-    const reelsPlayerRef = useRef(null)
+    const isLiked = song && likedSongs.some(liked => 
+        (liked.id || liked.videoId) === (song.id || song.videoId)
+    );
 
-
-    const hasSong = Boolean(song?.videoId)
-
-    // Provide default values when there's no valid song
-    const defaultSong = {
-        title: 'Neon Nights',
-        artist: 'Cyber punk',
-        imageUrl: 'logo.png',
-        videoId: ''
-    }
-
-    // Use either the actual song or fallback to the defaults
-    const currentSong = hasSong ? song : defaultSong
-    const { videoId, title, artist, imageUrl } = currentSong
-
-    // Check if current track is liked
-    const isCurrentTrackLiked = likedSongs.some((item) => item.videoId === videoId)
-
-    // Handle auto-play logic (like skipping to next in liked panel
     useEffect(() => {
-        if (!hasSong) {
-            setIsPlaying(false)
-            setAutoPlayNextSong(false)
-        } else {
-            if (autoPlayNextSong) {
-                setIsPlaying(true)
-                setAutoPlayNextSong(false)
+        if (audioRef.current && song?.preview_url) {
+            audioRef.current.src = song.preview_url;
+            audioRef.current.volume = isMuted ? 0 : volume;
+            
+            if (isPlaying) {
+                audioRef.current.play().catch(console.error);
             } else {
-                // Default to paused if not explicitly auto-playing
-                setIsPlaying(false)
+                audioRef.current.pause();
             }
         }
-    }, [song, hasSong, autoPlayNextSong])
+    }, [song, isPlaying, volume, isMuted]);
 
-    const handlePlayPause = () => {
-        if (!hasSong) return
-        setIsPlaying((prev) => !prev)
-    }
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (!audio) return;
 
-    const handleProgress = (state) => {
-        setPlayedSeconds(state.playedSeconds)
-    }
+        const updateTime = () => setCurrentTime(audio.currentTime);
+        const updateDuration = () => setDuration(audio.duration);
+        const handleEnded = () => {
+            setIsPlaying(false);
+            setCurrentTime(0);
+        };
 
-    const handleDuration = (dur) => {
-        setDuration(dur)
-    }
+        audio.addEventListener('timeupdate', updateTime);
+        audio.addEventListener('loadedmetadata', updateDuration);
+        audio.addEventListener('ended', handleEnded);
 
-    const handleSeek = (e) => {
-        const newTime = parseFloat(e.target.value)
-        setPlayedSeconds(newTime)
+        return () => {
+            audio.removeEventListener('timeupdate', updateTime);
+            audio.removeEventListener('loadedmetadata', updateDuration);
+            audio.removeEventListener('ended', handleEnded);
+        };
+    }, [setIsPlaying]);
 
-        if (audioPlayerRef.current) {
-            audioPlayerRef.current.seekTo(newTime, 'seconds')
-        }
-        if (reelsPlayerRef.current) {
-            reelsPlayerRef.current.seekTo(newTime, 'seconds')
-        }
-    }
-
-    const handleTrackEnd = () => {
-        if (isPlaying && isLikedPanelActive && onNextLikedSong) {
-            setAutoPlayNextSong(true)
-            onNextLikedSong()
-        }
-    }
-
-    // Convert seconds to MM:SS
     const formatTime = (time) => {
-        if (!time || isNaN(time)) return '0:00'
-        const minutes = Math.floor(time / 60)
-        const seconds = Math.floor(time % 60).toString().padStart(2, '0')
-        return `${minutes}:${seconds}`
+        if (isNaN(time)) return '0:00';
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+    const handleProgressClick = (e) => {
+        if (!audioRef.current || !progressRef.current) return;
+        
+        const rect = progressRef.current.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        const newTime = percent * duration;
+        
+        audioRef.current.currentTime = newTime;
+        setCurrentTime(newTime);
+    };
+
+    const togglePlayPause = () => {
+        if (!song?.preview_url) return;
+        setIsPlaying(!isPlaying);
+    };
+
+    const toggleMute = () => {
+        setIsMuted(!isMuted);
+    };
+
+    const handleVolumeChange = (e) => {
+        const newVolume = parseFloat(e.target.value);
+        setVolume(newVolume);
+        setIsMuted(newVolume === 0);
+    };
+
+    const toggleShuffle = () => {
+        setIsShuffled(!isShuffled);
+    };
+
+    const toggleRepeat = () => {
+        const modes = ['off', 'all', 'one'];
+        const currentIndex = modes.indexOf(repeatMode);
+        const nextIndex = (currentIndex + 1) % modes.length;
+        setRepeatMode(modes[nextIndex]);
+    };
+
+    if (!song) {
+        return (
+            <div className="h-20 bg-gray-900 border-t border-gray-800 flex items-center justify-center">
+                <p className="text-gray-400">No song selected</p>
+            </div>
+        );
     }
+
+    const progressPercent = duration ? (currentTime / duration) * 100 : 0;
 
     return (
-        <div className="w-full h-full bg-black bg-opacity-60 backdrop-blur-sm flex items-center text-white px-4 md:px-8 relative">
-            {/* (1) Left Section: Thumbnail, Title/Artist, and Like Button */}
-            <div className="flex items-center md:w-[30%] min-w-0">
-                {/* Image + Text in one flex row (with possible grow) */}
-                <div className="flex items-center min-w-0 flex-grow space-x-4">
-                    {/* Thumbnail */}
+        <>
+            <audio ref={audioRef} />
+            
+            <motion.div
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                className="h-20 bg-gray-900 border-t border-gray-800 px-4 flex items-center justify-between"
+            >
+                {/* Song Info */}
+                <div className="flex items-center space-x-3 min-w-0 w-1/4">
                     <img
-                        src={imageUrl}
-                        alt={title}
-                        className=" w-16 h-14 object-cover rounded-full"
+                        src={song.imageUrl || 'https://via.placeholder.com/56'}
+                        alt={song.title}
+                        className="w-14 h-14 rounded object-cover"
                     />
+                    <div className="min-w-0 flex-1">
+                        <h4 className="text-white font-medium truncate">{song.title}</h4>
+                        <p className="text-gray-400 text-sm truncate">{song.artist}</p>
+                    </div>
+                    <motion.button
+                        onClick={() => onLikeToggle(song, isLiked)}
+                        className={`p-2 rounded-full transition-colors ${
+                            isLiked 
+                                ? 'text-green-400 hover:text-green-300' 
+                                : 'text-gray-400 hover:text-white'
+                        }`}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                    >
+                        <Heart className="w-4 h-4" fill={isLiked ? 'currentColor' : 'none'} />
+                    </motion.button>
+                </div>
 
-                    {/* Title & Artist (truncate so long text doesn't push the button) */}
-                    <div className="flex flex-col min-w-0">
-                        <motion.div
-                            initial={{ y: 10, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                            className="text-lg font-bold truncate"
+                {/* Player Controls */}
+                <div className="flex flex-col items-center space-y-2 w-2/4 max-w-md">
+                    <div className="flex items-center space-x-4">
+                        <motion.button
+                            onClick={toggleShuffle}
+                            className={`p-2 rounded-full transition-colors ${
+                                isShuffled ? 'text-green-400' : 'text-gray-400 hover:text-white'
+                            }`}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                         >
-                            {title}
-                        </motion.div>
-                        <motion.div
-                            initial={{ y: 10, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.3 }}
-                            className="text-sm text-purple-200 truncate"
+                            <Shuffle className="w-4 h-4" />
+                        </motion.button>
+
+                        <motion.button
+                            className="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                         >
-                            {artist}
-                        </motion.div>
+                            <SkipBack className="w-5 h-5" />
+                        </motion.button>
+
+                        <motion.button
+                            onClick={togglePlayPause}
+                            className="w-10 h-10 bg-white hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            disabled={!song?.preview_url}
+                        >
+                            {isPlaying ? (
+                                <Pause className="w-5 h-5 text-black" fill="currentColor" />
+                            ) : (
+                                <Play className="w-5 h-5 text-black ml-0.5" fill="currentColor" />
+                            )}
+                        </motion.button>
+
+                        <motion.button
+                            className="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <SkipForward className="w-5 h-5" />
+                        </motion.button>
+
+                        <motion.button
+                            onClick={toggleRepeat}
+                            className={`p-2 rounded-full transition-colors ${
+                                repeatMode !== 'off' ? 'text-green-400' : 'text-gray-400 hover:text-white'
+                            }`}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <Repeat className="w-4 h-4" />
+                            {repeatMode === 'one' && (
+                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full"></span>
+                            )}
+                        </motion.button>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="flex items-center space-x-2 w-full">
+                        <span className="text-xs text-gray-400 min-w-[35px]">
+                            {formatTime(currentTime)}
+                        </span>
+                        <div
+                            ref={progressRef}
+                            onClick={handleProgressClick}
+                            className="flex-1 h-1 bg-gray-600 rounded-full cursor-pointer group"
+                        >
+                            <div
+                                className="h-full bg-white rounded-full relative group-hover:bg-green-400 transition-colors"
+                                style={{ width: `${progressPercent}%` }}
+                            >
+                                <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            </div>
+                        </div>
+                        <span className="text-xs text-gray-400 min-w-[35px]">
+                            {formatTime(duration)}
+                        </span>
                     </div>
                 </div>
 
-                {/* Like Button (kept separate, so it doesn't shift) */}
-                {hasSong && (
-                    <button
-                        className="ml-4 text-pink-400 hover:text-pink-300 transition-colors"
-                        onClick={() => onLikeToggle?.(currentSong, isCurrentTrackLiked)}
-                    >
-                        {isCurrentTrackLiked ? (
-                            <MdFavorite size={24} />
-                        ) : (
-                            <MdFavoriteBorder size={24} />
-                        )}
-                    </button>
-                )}
-            </div>
-
-            {/* (2) Middle Controls + (3) Seek bar (hidden on mobile) */}
-            <div className="w-[40%] md:static absolute bottom-[40rem] -right-4 flex flex-col items-center justify-center">
-                {/* Controls row */}
-                <div className="flex justify-center items-center space-x-6">
-                    {isLikedPanelActive && (
-                        <button
-                            className="hover:text-pink-400 transition-colors md:static absolute top-[33rem] right-[23rem]"
-                            onClick={onPrevLikedSong}
-                            disabled={!hasSong}
-                        >
-                            <MdSkipPrevious size={28} />
-                        </button>
-                    )}
-
-                    <button
-                        className={`bg-purple-600 hover:bg-purple-500 transition-colors rounded-full p-2 md:static absolute top-[32rem] right-[12rem] ${
-                            !hasSong ? 'opacity-50 cursor-not-allowed' : ''
+                {/* Volume and Additional Controls */}
+                <div className="flex items-center space-x-3 w-1/4 justify-end">
+                    <motion.button
+                        onClick={() => setShowVisualizer(!showVisualizer)}
+                        className={`p-2 rounded-full transition-colors ${
+                            showVisualizer ? 'text-green-400' : 'text-gray-400 hover:text-white'
                         }`}
-                        onClick={handlePlayPause}
-                        disabled={!hasSong}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                     >
-                        {isPlaying ? <MdPause size={28} /> : <MdPlayArrow size={28} />}
-                    </button>
+                        <Maximize2 className="w-4 h-4" />
+                    </motion.button>
 
-                    {isLikedPanelActive && (
-                        <button
-                            className="hover:text-pink-400 transition-colors md:static absolute top-[33rem] right-[2rem]"
-                            onClick={onNextLikedSong}
-                            disabled={!hasSong}
+                    <div className="flex items-center space-x-2">
+                        <motion.button
+                            onClick={toggleMute}
+                            className="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                         >
-                            <MdSkipNext size={28} />
-                        </button>
-                    )}
-
-                    {/* Expand/Close button for the Reels-style video */}
-                    {hasSong && (
-                        <button
-                            className="hidden lg:block absolute right-10 text-blue-400 hover:text-blue-300 transition-colors"
-                            onClick={() => setShowVideo((prev) => !prev)}
-                        >
-                            {showVideo ? <LuPanelRightClose size={27} /> : <FaYoutube size={35} />}
-                        </button>
-                    )}
-                </div>
-
-                {/* Seek bar (desktop only) */}
-                <div className="hidden md:flex items-center space-x-4 mt-3 w-full justify-center">
-                    <span className="text-sm">{formatTime(playedSeconds)}</span>
-                    <input
-                        type="range"
-                        className="flex-1 h-1 bg-gray-300 rounded-full cursor-pointer"
-                        min="0"
-                        max={duration}
-                        step="1"
-                        value={playedSeconds}
-                        onChange={handleSeek}
-                        disabled={!hasSong}
-                    />
-                    <span className="text-sm">{formatTime(duration)}</span>
-                </div>
-            </div>
-
-            {/*AUDIO-ONLY PLAYER (hidden visually) */}
-            {hasSong && (
-                <ReactPlayer
-                    ref={audioPlayerRef}
-                    url={`https://www.youtube.com/watch?v=${videoId}`}
-                    playing={!showVideo && isPlaying}
-                    onProgress={handleProgress}
-                    onDuration={handleDuration}
-                    onEnded={handleTrackEnd}
-                    width="0"
-                    height="0"
-                    config={{
-                        youtube: {
-                            playerVars: {
-                                disablekb: 1
-                            }
-                        }
-                    }}
-                />
-            )}
-
-            {/* REELS-STYLE VIDEO (Desktop) */}
-            {hasSong && (
-                <div
-                    className={`
-            hidden lg:flex fixed 2xl:bottom-20 bottom-[166px] right-0 z-50 transform transition-transform duration-500
-            rounded-tl-lg bg-black
-            ${showVideo ? 'translate-x-0' : 'translate-x-full'}
-            h-[760px] 2xl:h-[1000px] 2xl:w-[50%] w-[30%]
-          `}
-                >
-                    <div className="relative w-full h-full overflow-hidden rounded-tl-lg">
-                        <ReactPlayer
-                            ref={reelsPlayerRef}
-                            url={`https://www.youtube.com/watch?v=${videoId}`}
-                            playing={showVideo && isPlaying}
-                            onProgress={handleProgress}
-                            onDuration={handleDuration}
-                            onEnded={handleTrackEnd}
-                            width="136%"
-                            height="100%"
-                            className="absolute top-1/2 left-1/2"
-                            style={{
-                                transform: 'translate(-50%, -50%) scale(4)',
-                                transformOrigin: 'center center'
-                            }}
-                            config={{
-                                youtube: {
-                                    playerVars: {
-                                        disablekb: 1,
-                                        playsinline: 1,
-                                        vq: 'hd1080'
-                                    }
-                                }
-                            }}
+                            {isMuted || volume === 0 ? (
+                                <VolumeX className="w-4 h-4" />
+                            ) : (
+                                <Volume2 className="w-4 h-4" />
+                            )}
+                        </motion.button>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={isMuted ? 0 : volume}
+                            onChange={handleVolumeChange}
+                            className="w-20 h-1 bg-gray-600 rounded-full appearance-none cursor-pointer slider"
                         />
                     </div>
-
-                    {/* Title/Artist overlay at bottom of the Reels-style video */}
-                    <div className="absolute 2xl:w-full w-full h-[7rem] 2xl:h-[7rem] top-[735px] 2xl:top-[890px] z-10 p-2 bg-black/60  text-white overflow-hidden">
-                        <div className="flex h-10 w-full items-center justify-center gap-1">
-                            {Array.from({ length: 20 }).map((_, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ height: '20%' }}
-                                    animate={{ height: ['20%', '90%', '20%'] }}
-                                    transition={{
-                                        duration: 0.8,
-                                        repeat: Infinity,
-                                        delay: i * 0.1,
-                                        ease: 'easeInOut'
-                                    }}
-                                    className="w-1 bg-gradient-to-t from-purple-500 to-blue-500 rounded-full"
-                                />
-                            ))}
-                        </div>
-                        <h3 className="font-semibold text-lg">
-                            {title || 'Unknown Title'}
-                        </h3>
-                        <p className="text-sm text-gray-200">
-                            {artist || 'Unknown Artist'}
-                        </p>
-                    </div>
                 </div>
-            )}
-        </div>
-    )
+            </motion.div>
+
+            {/* Audio Visualizer Modal */}
+            <AnimatePresence>
+                {showVisualizer && (
+                    <AudioVisualizer
+                        isPlaying={isPlaying}
+                        song={song}
+                        onClose={() => setShowVisualizer(false)}
+                        audioRef={audioRef}
+                    />
+                )}
+            </AnimatePresence>
+        </>
+    );
 }
-
-
