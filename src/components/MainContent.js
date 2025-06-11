@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import HomeView from './views/HomeView';
+import EnhancedHomeView from './views/EnhancedHomeView';
 import LibraryView from './views/LibraryView';
 import LikedSongsView from './views/LikedSongsView';
 import RecentlyPlayedView from './views/RecentlyPlayedView';
@@ -21,7 +21,7 @@ export default function MainContent({
         switch (activeView) {
             case 'home':
                 return (
-                    <HomeView
+                    <EnhancedHomeView
                         recentlyPlayed={recentlyPlayed}
                         recommendations={recommendations}
                         onSelectSong={onSelectSong}
@@ -72,7 +72,7 @@ export default function MainContent({
                 );
             default:
                 return (
-                    <HomeView
+                    <EnhancedHomeView
                         recentlyPlayed={recentlyPlayed}
                         recommendations={recommendations}
                         onSelectSong={onSelectSong}

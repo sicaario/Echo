@@ -10,10 +10,11 @@ import {
     saveRecentlyPlayed,
     removeRecentlyPlayedSong,
 } from "./firebase";
-import { getSpotifyRecommendations, searchSpotifyTracks } from "./services/spotifyService";
-import Sidebar from "./components/Sidebar";
+import { searchSpotifyTracks } from "./services/spotifyService";
+import { getEnhancedRecommendations } from "./services/enhancedRecommendationService";
+import EnhancedSidebar from "./components/EnhancedSidebar";
 import MainContent from "./components/MainContent";
-import MusicPlayer from "./components/MusicPlayer";
+import EnhancedMusicPlayer from "./components/EnhancedMusicPlayer";
 import SearchDialog from "./components/SearchDialog";
 import ProfileDialog from "./components/ProfileDialog";
 import { AnimatePresence } from "framer-motion";
@@ -41,9 +42,14 @@ export default function App() {
                     const fetchedRecentlyPlayed = await fetchRecentlyPlayed(currentUser.uid);
                     setRecentlyPlayed(fetchedRecentlyPlayed);
                     
-                    // Get recommendations based on liked songs
-                    if (fetchedLikedSongs.length > 0) {
-                        const recs = await getSpotifyRecommendations(fetchedLikedSongs.slice(0, 5));
+                    // Get enhanced recommendations
+                    if (fetchedLikedSongs.length > 0 || fetchedRecentlyPlayed.length > 0) {
+                        const recs = await getEnhancedRecommendations({
+                            likedSongs: fetchedLikedSongs,
+                            recentlyPlayed: fetchedRecentlyPlayed,
+                            timeOfDay: getTimeOfDay(),
+                            mood: 'neutral'
+                        });
                         setRecommendations(recs);
                     }
                 } catch (error) {
@@ -76,6 +82,14 @@ export default function App() {
         window.addEventListener("beforeunload", saveSongsOnUnload);
         return () => window.removeEventListener("beforeunload", saveSongsOnUnload);
     }, [user, likedSongs, recentlyPlayed]);
+
+    const getTimeOfDay = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'morning';
+        if (hour < 18) return 'afternoon';
+        if (hour < 22) return 'evening';
+        return 'night';
+    };
 
     const handleSignIn = async () => {
         try {
@@ -143,7 +157,12 @@ export default function App() {
         // Update recommendations when liked songs change
         if (!isCurrentlyLiked && likedSongs.length >= 0) {
             try {
-                const recs = await getSpotifyRecommendations([...likedSongs, song].slice(0, 5));
+                const recs = await getEnhancedRecommendations({
+                    likedSongs: [...likedSongs, song],
+                    recentlyPlayed,
+                    timeOfDay: getTimeOfDay(),
+                    mood: 'neutral'
+                });
                 setRecommendations(recs);
             } catch (error) {
                 console.error("Error updating recommendations:", error);
@@ -193,8 +212,8 @@ export default function App() {
             <Toaster position="top-right" reverseOrder={false} />
             
             <div className="flex flex-1 min-h-0">
-                {/* Sidebar */}
-                <Sidebar
+                {/* Enhanced Sidebar */}
+                <EnhancedSidebar
                     activeView={activeView}
                     setActiveView={setActiveView}
                     user={user}
@@ -219,8 +238,8 @@ export default function App() {
                 />
             </div>
 
-            {/* Music Player */}
-            <MusicPlayer
+            {/* Enhanced Music Player */}
+            <EnhancedMusicPlayer
                 song={currentSong}
                 isPlaying={isPlaying}
                 setIsPlaying={setIsPlaying}
